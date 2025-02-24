@@ -1,0 +1,16 @@
+[package]
+name="jj-starship"
+version="0.1.0"
+description="starship plugin for jj"
+resolver="2"
+edition="2021"
+authors= ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
+license= "MIT"
+readme="README.md"
+repository="https://gitlab.com/Lanastara/jj-starship/-"
+documentation="lanastara.gitlab.io/jj-starship/jj_starship"
+
+[lints]
+
+[dependencies]
+
