@@ -1,16 +1,21 @@
 [package]
-name="jj-starship"
-version="0.1.0"
-description="starship plugin for jj"
-resolver="2"
-edition="2021"
-authors= ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
-license= "MIT"
-readme="README.md"
-repository="https://gitlab.com/Lanastara/jj-starship/-"
-documentation="lanastara.gitlab.io/jj-starship/jj_starship"
+name = "jj-starship"
+version = "0.1.0"
+description = "starship plugin for jj"
+resolver = "2"
+edition = "2021"
+authors = ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://gitlab.com/Lanastara/jj-starship/-"
+documentation = "lanastara.gitlab.io/jj-starship/jj_starship"
 
 [lints]
 
 [dependencies]
-
+jj-lib = "0.26"
+jj-cli = "0.26"
+clap = "4.5.31"
+colored = "3.0"
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
