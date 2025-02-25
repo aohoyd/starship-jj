@@ -21,6 +21,8 @@ starship plugin for jj
 ## Installation
 
 ### From Source
+
+!Warning this crate is not yet pushed to crates.io so installaton doesn't work yet.
 ```bash
   cargo install starship-jj --locked
 ```
