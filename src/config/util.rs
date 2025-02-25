@@ -9,6 +9,35 @@ pub struct Style {
     bg_color: Option<Color>,
 }
 
+impl Style {
+    pub fn print(&self, io: &mut impl Write) -> Result<(), CommandError> {
+        let mut prefix;
+        if let Some(color) = self.color {
+            prefix = "".color(color);
+        } else {
+            prefix = "".clear();
+        }
+        if let Some(color) = self.bg_color {
+            prefix = prefix.on_color(color);
+        }
+        write!(io, "{prefix}")?;
+        Ok(())
+    }
+
+    pub fn format(&self) -> String {
+        let mut prefix;
+        if let Some(color) = self.color {
+            prefix = "".color(color);
+        } else {
+            prefix = "".clear();
+        }
+        if let Some(color) = self.bg_color {
+            prefix = prefix.on_color(color);
+        }
+        format!("{prefix}")
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone, Copy)]
 pub enum Color {
     Black,
@@ -75,21 +104,5 @@ impl From<colored::Color> for Color {
             colored::Color::BrightWhite => Color::BrightWhite,
             colored::Color::TrueColor { r, g, b } => Color::TrueColor { r, g, b },
         }
-    }
-}
-
-impl Style {
-    pub fn print(&self, io: &mut impl Write) -> Result<(), CommandError> {
-        let mut prefix;
-        if let Some(color) = self.color {
-            prefix = "".color(color);
-        } else {
-            prefix = "".clear();
-        }
-        if let Some(color) = self.bg_color {
-            prefix = prefix.on_color(color);
-        }
-        write!(io, "{prefix}")?;
-        Ok(())
     }
 }

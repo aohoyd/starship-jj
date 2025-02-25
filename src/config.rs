@@ -2,6 +2,7 @@ use std::io::Write;
 
 use bookmarks::Bookmarks;
 use commit_desc::CommitDesc;
+use commit_diff::CommitDiff;
 use commit_warnings::CommitWarnings;
 use jj_cli::command_error::CommandError;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,7 @@ mod util;
 
 mod bookmarks;
 mod commit_desc;
+mod commit_diff;
 mod commit_warnings;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -26,6 +28,7 @@ impl Config {
                 }
                 ModuleConfig::CommitDesc(commit_desc) => commit_desc.print(io, data)?,
                 ModuleConfig::CommitWarnings(commit_warnings) => commit_warnings.print(io, data)?,
+                ModuleConfig::CommitDiff(commit_diff) => commit_diff.print(io, data)?,
             }
         }
         Ok(())
@@ -37,7 +40,7 @@ enum ModuleConfig {
     Bookmarks(Bookmarks),
     CommitDesc(CommitDesc),
     CommitWarnings(CommitWarnings),
-    // CommitState(CommitState),
+    CommitDiff(CommitDiff),
 }
 
 impl Default for Config {
@@ -46,6 +49,8 @@ impl Default for Config {
             modules: vec![
                 ModuleConfig::Bookmarks(Default::default()),
                 ModuleConfig::CommitDesc(Default::default()),
+                ModuleConfig::CommitWarnings(Default::default()),
+                ModuleConfig::CommitDiff(Default::default()),
             ],
         }
     }

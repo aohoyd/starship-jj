@@ -4,9 +4,11 @@ use args::{CustomCommand, StarshipCommands};
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper, RevisionArg},
     command_error::CommandError,
+    diff_util::{get_copy_records, DiffStatOptions, DiffStats},
     ui::Ui,
 };
-use jj_lib::{graph::TopoGroupedGraphIterator, repo::Repo};
+use jj_lib::{copies::CopyRecords, graph::TopoGroupedGraphIterator, repo::Repo};
+use pollster::FutureExt;
 
 mod args;
 mod config;
@@ -33,6 +35,11 @@ struct JJData<'a> {
     commit_is_hidden: bool,
     commit_is_conflict: bool,
     commit_is_divergent: bool,
+    // commit_files_added : usize,
+    // commit_files_removed : usize,
+    commit_files_changed: usize,
+    commit_lines_added: usize,
+    commit_lines_removed: usize,
 }
 
 fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), CommandError> {
@@ -53,9 +60,32 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
         };
 
         if index == 0 {
+            let matcher = workspace_helper.parse_file_patterns(ui, &[])?.to_matcher();
             let commit = store.get_commit(&commit_id)?;
             let change_id = commit.change_id();
             let change = repo.resolve_change_id(&change_id);
+            let mut copy_records = CopyRecords::default();
+            for parent in commit.parent_ids() {
+                let records = get_copy_records(repo.store(), parent, &commit_id, &matcher)?;
+                copy_records.add_records(records)?;
+            }
+
+            let tree = commit.tree()?;
+            let parent_tree = commit.parent_tree(repo.as_ref())?;
+
+            let tree_diff = parent_tree.diff_stream_with_copies(&tree, &matcher, &copy_records);
+            let stats = DiffStats::calculate(
+                store,
+                tree_diff,
+                &DiffStatOptions::default(),
+                jj_lib::conflicts::ConflictMarkerStyle::Diff,
+            )
+            .block_on()?;
+
+            data.commit_files_changed = stats.entries().len();
+            data.commit_lines_added = stats.count_total_added();
+            data.commit_lines_removed = stats.count_total_removed();
+
             data.commit_desc = commit.description().to_string();
             data.commit_is_conflict = commit.has_conflict()?;
 
