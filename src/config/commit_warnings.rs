@@ -33,15 +33,15 @@ impl Default for CommitWarnings {
 
 impl CommitWarnings {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
-        if data.commit_is_conflict {
+        if data.commit.warnings.conflict {
             self.conflict.print(io)?;
             write!(io, "(CONFLICT) ")?;
         }
-        if data.commit_is_divergent {
+        if data.commit.warnings.divergent {
             self.divergent.print(io)?;
             write!(io, "(DIVERGENT) ")?;
         }
-        if data.commit_is_hidden {
+        if data.commit.warnings.hidden {
             self.hidden.print(io)?;
             write!(io, "(HIDDEN) ")?;
         }

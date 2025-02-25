@@ -1,4 +1,3 @@
-use colored::Colorize;
 use jj_cli::command_error::CommandError;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
@@ -11,30 +10,62 @@ pub struct Style {
 
 impl Style {
     pub fn print(&self, io: &mut impl Write) -> Result<(), CommandError> {
-        let mut prefix;
+        write!(io, "\x1B[")?;
+
+        let mut first = true;
+
+        if self.bg_color.is_none() && self.color.is_none() {
+            write!(io, "0")?;
+        }
+
         if let Some(color) = self.color {
-            prefix = "".color(color);
-        } else {
-            prefix = "".clear();
+            if first {
+                write!(io, "{}", colored::Color::from(color).to_fg_str())?;
+            } else {
+                write!(io, ";{}", colored::Color::from(color).to_fg_str())?;
+            }
+            first = false;
         }
         if let Some(color) = self.bg_color {
-            prefix = prefix.on_color(color);
+            if first {
+                write!(io, "{}", colored::Color::from(color).to_bg_str())?;
+            } else {
+                write!(io, ";{}", colored::Color::from(color).to_bg_str())?;
+            }
+            //first = false;
         }
-        write!(io, "{prefix}")?;
+
+        write!(io, "m")?;
         Ok(())
     }
 
     pub fn format(&self) -> String {
-        let mut prefix;
+        let mut s = "\x1B[".to_string();
+
+        let mut first = true;
+
+        if self.bg_color.is_none() && self.color.is_none() {
+            s.push('0');
+        }
+
         if let Some(color) = self.color {
-            prefix = "".color(color);
-        } else {
-            prefix = "".clear();
+            if !first {
+                s.push(';');
+            } else {
+            }
+            s.push_str(colored::Color::from(color).to_fg_str().as_ref());
+            first = false;
         }
         if let Some(color) = self.bg_color {
-            prefix = prefix.on_color(color);
+            if !first {
+                s.push(';');
+            }
+            s.push_str(colored::Color::from(color).to_bg_str().as_ref());
+            //first = false;
         }
-        format!("{prefix}")
+
+        s.push('m');
+        s
     }
 }
 
