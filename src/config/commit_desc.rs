@@ -14,10 +14,11 @@ pub struct CommitDesc {
 impl CommitDesc {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
         let first_line = data
-            .commit_desc
+            .commit
+            .desc
             .split_once(|c| c == '\r' || c == '\n')
             .map(|(line, _rest)| line)
-            .unwrap_or(&data.commit_desc);
+            .unwrap_or(&data.commit.desc);
 
         if !first_line.is_empty() {
             self.style.print(io)?;

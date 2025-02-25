@@ -59,9 +59,9 @@ struct Context {
 impl CommitDiff {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
         let context = Context {
-            added: self.added_lines.format(data.commit_lines_added),
-            removed: self.removed_lines.format(data.commit_lines_removed),
-            changed: self.changed_files.format(data.commit_files_changed),
+            added: self.added_lines.format(data.commit.diff.lines_added),
+            removed: self.removed_lines.format(data.commit.diff.lines_removed),
+            changed: self.changed_files.format(data.commit.diff.files_changed),
         };
         let mut tiny_template = tinytemplate::TinyTemplate::new();
         tiny_template
