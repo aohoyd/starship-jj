@@ -5,8 +5,8 @@ use std::io::Write;
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Style {
-    color: Option<Color>,
-    bg_color: Option<Color>,
+    pub color: Option<Color>,
+    pub bg_color: Option<Color>,
 }
 
 impl Style {

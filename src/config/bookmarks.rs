@@ -3,12 +3,25 @@ use std::io::Write;
 use jj_cli::command_error::CommandError;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Default)]
+use super::util::{Color, Style};
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Bookmarks {
     #[serde(flatten)]
-    style: super::util::Style,
-    max_length: Option<usize>,
+    style: Style,
     behind_symbol: Option<char>,
+}
+
+impl Default for Bookmarks {
+    fn default() -> Self {
+        Self {
+            style: Style {
+                color: Some(Color::Red),
+                ..Default::default()
+            },
+            behind_symbol: Some('⇡'),
+        }
+    }
 }
 
 impl Bookmarks {

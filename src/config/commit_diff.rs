@@ -3,6 +3,8 @@ use std::io::Write;
 use jj_cli::command_error::CommandError;
 use serde::{Deserialize, Serialize};
 
+use super::util::Color;
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CommitDiff {
     #[serde(flatten)]
@@ -21,11 +23,34 @@ pub struct CommitDiff {
 impl Default for CommitDiff {
     fn default() -> Self {
         Self {
-            style: Default::default(),
-            template: "[{changed} {added} {removed}]".to_string(),
-            changed_files: Default::default(),
-            added_lines: Default::default(),
-            removed_lines: Default::default(),
+            style: super::util::Style {
+                color: Some(Color::Magenta),
+                ..Default::default()
+            },
+            template: "[{changed} {added}{removed}]".to_string(),
+            changed_files: Style {
+                style: super::util::Style {
+                    color: Some(Color::Cyan),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            added_lines: Style {
+                style: super::util::Style {
+                    color: Some(Color::Green),
+                    ..Default::default()
+                },
+                prefix: "+".to_string(),
+                ..Default::default()
+            },
+            removed_lines: Style {
+                style: super::util::Style {
+                    color: Some(Color::Red),
+                    ..Default::default()
+                },
+                prefix: "-".to_string(),
+                ..Default::default()
+            },
         }
     }
 }
