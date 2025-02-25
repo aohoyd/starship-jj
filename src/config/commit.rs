@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 use super::util::Style;
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CommitDesc {
+pub struct Commit {
     #[serde(flatten)]
     style: Style,
     max_length: Option<usize>,
 }
 
-impl Default for CommitDesc {
+impl Default for Commit {
     fn default() -> Self {
         Self {
             style: Default::default(),
@@ -21,7 +21,7 @@ impl Default for CommitDesc {
     }
 }
 
-impl CommitDesc {
+impl Commit {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
         let first_line = data
             .commit

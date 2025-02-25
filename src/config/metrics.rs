@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use super::util::Color;
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CommitDiff {
+pub struct Metrics {
     #[serde(flatten)]
     style: super::util::Style,
 
@@ -20,7 +20,7 @@ pub struct CommitDiff {
     removed_lines: Style,
 }
 
-impl Default for CommitDiff {
+impl Default for Metrics {
     fn default() -> Self {
         Self {
             style: super::util::Style {
@@ -82,7 +82,7 @@ struct Context {
     changed: String,
 }
 
-impl CommitDiff {
+impl Metrics {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
         let context = Context {
             added: self

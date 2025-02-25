@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 use super::util::Style;
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CommitWarnings {
+pub struct State {
     conflict: Style,
     divergent: Style,
     hidden: Style,
 }
 
-impl Default for CommitWarnings {
+impl Default for State {
     fn default() -> Self {
         Self {
             conflict: Style {
@@ -31,7 +31,7 @@ impl Default for CommitWarnings {
     }
 }
 
-impl CommitWarnings {
+impl State {
     pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
         if data.commit.warnings.conflict {
             self.conflict.print(io)?;

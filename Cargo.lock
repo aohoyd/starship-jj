@@ -2146,6 +2146,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "colored",
+ "glob",
  "jj-cli",
  "jj-lib",
  "pollster",

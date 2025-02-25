@@ -1,22 +1,25 @@
 use std::io::Write;
 
 use bookmarks::Bookmarks;
-use commit_desc::CommitDesc;
-use commit_diff::CommitDiff;
-use commit_warnings::CommitWarnings;
+use commit::Commit;
 use jj_cli::command_error::CommandError;
+use metrics::Metrics;
 use serde::{Deserialize, Serialize};
+use state::State;
+use util::Glob;
 
-mod util;
+pub mod util;
 
 mod bookmarks;
-mod commit_desc;
-mod commit_diff;
-mod commit_warnings;
+mod commit;
+mod metrics;
+mod state;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     modules: Vec<ModuleConfig>,
+    pub bookmark_search_depth: Option<usize>,
+    pub excluded_bookmarks: Vec<Glob>,
 }
 
 impl Config {
@@ -26,9 +29,9 @@ impl Config {
                 ModuleConfig::Bookmarks(bookmarks) => {
                     bookmarks.print(io, &data)?;
                 }
-                ModuleConfig::CommitDesc(commit_desc) => commit_desc.print(io, data)?,
-                ModuleConfig::CommitWarnings(commit_warnings) => commit_warnings.print(io, data)?,
-                ModuleConfig::CommitDiff(commit_diff) => commit_diff.print(io, data)?,
+                ModuleConfig::Commit(commit_desc) => commit_desc.print(io, data)?,
+                ModuleConfig::State(commit_warnings) => commit_warnings.print(io, data)?,
+                ModuleConfig::Metrics(commit_diff) => commit_diff.print(io, data)?,
             }
         }
         Ok(())
@@ -38,9 +41,9 @@ impl Config {
 #[derive(Deserialize, Serialize, Debug)]
 enum ModuleConfig {
     Bookmarks(Bookmarks),
-    CommitDesc(CommitDesc),
-    CommitWarnings(CommitWarnings),
-    CommitDiff(CommitDiff),
+    Commit(Commit),
+    State(State),
+    Metrics(Metrics),
 }
 
 impl Default for Config {
@@ -48,10 +51,12 @@ impl Default for Config {
         Self {
             modules: vec![
                 ModuleConfig::Bookmarks(Default::default()),
-                ModuleConfig::CommitDesc(Default::default()),
-                ModuleConfig::CommitWarnings(Default::default()),
-                ModuleConfig::CommitDiff(Default::default()),
+                ModuleConfig::Commit(Default::default()),
+                ModuleConfig::State(Default::default()),
+                ModuleConfig::Metrics(Default::default()),
             ],
+            bookmark_search_depth: None,
+            excluded_bookmarks: Default::default(),
         }
     }
 }

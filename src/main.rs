@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, process::ExitCode, sync::Arc};
 
 use args::{CustomCommand, StarshipCommands};
+use config::util::Glob;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
     command_error::CommandError,
@@ -106,7 +107,15 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
         None => data.commit.warnings.hidden = true,
     }
 
-    find_parent_bookmarks(commit_id, 0, 5, &mut data.bookmarks, repo.view(), store)?;
+    find_parent_bookmarks(
+        commit_id,
+        0,
+        config.bookmark_search_depth,
+        &config.excluded_bookmarks,
+        &mut data.bookmarks,
+        repo.view(),
+        store,
+    )?;
 
     let mut io = ui.stdout();
 
@@ -118,7 +127,8 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
 fn find_parent_bookmarks<'a>(
     commit_id: &CommitId,
     depth: usize,
-    max_depth: usize,
+    max_depth: Option<usize>,
+    excluded_bookmarks: &Vec<Glob>,
     bookmarks: &mut BTreeMap<&'a str, usize>,
     view: &'a View,
     store: &Arc<Store>,
@@ -129,7 +139,12 @@ fn find_parent_bookmarks<'a>(
         .collect();
 
     if !tmp.is_empty() {
-        for bookmark in tmp {
+        'bookmark: for bookmark in tmp {
+            for glob in excluded_bookmarks {
+                if glob.matches(bookmark) {
+                    continue 'bookmark;
+                }
+            }
             bookmarks
                 .entry(&bookmark)
                 .and_modify(|v| {
@@ -142,14 +157,24 @@ fn find_parent_bookmarks<'a>(
         return Ok(());
     }
 
-    if depth >= max_depth {
-        return Ok(());
+    if let Some(max_depth) = max_depth {
+        if depth >= max_depth {
+            return Ok(());
+        }
     }
 
     let commit = store.get_commit(commit_id)?;
 
     for p in commit.parent_ids() {
-        find_parent_bookmarks(p, depth + 1, max_depth, bookmarks, view, store)?;
+        find_parent_bookmarks(
+            p,
+            depth + 1,
+            max_depth,
+            excluded_bookmarks,
+            bookmarks,
+            view,
+            store,
+        )?;
     }
     Ok(())
 }

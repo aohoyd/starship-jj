@@ -1,6 +1,29 @@
+use glob::Pattern;
 use jj_cli::command_error::CommandError;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(try_from = "&str", into = "String")]
+pub struct Glob(glob::Pattern);
+impl TryFrom<&str> for Glob {
+    type Error = glob::PatternError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(Self(Pattern::new(value)?))
+    }
+}
+impl From<Glob> for String {
+    fn from(value: Glob) -> Self {
+        value.0.as_str().to_string()
+    }
+}
+
+impl Glob {
+    pub fn matches(&self, haystack: &str) -> bool {
+        self.0.matches(haystack)
+    }
+}
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Style {
