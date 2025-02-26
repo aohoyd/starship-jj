@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, io::Write, process::ExitCode, sync::Arc};
 
 use args::{ConfigCommands, CustomCommand, StarshipCommands};
-use config::util::Glob;
+use config::BookmarkConfig;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
     command_error::{user_error, CommandError},
@@ -34,7 +34,11 @@ fn starship(
 
             writeln!(ui.stdout(), "{}", config_dir)?;
         }
-        _ => todo!(),
+        StarshipCommands::Config(ConfigCommands::Default) => {
+            let c = toml::to_string_pretty(&config::Config::default()).map_err(user_error)?;
+
+            writeln!(ui.stdout(), "{}", c)?;
+        }
     }
 
     Ok(())
@@ -122,8 +126,7 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
     find_parent_bookmarks(
         commit_id,
         0,
-        config.bookmark_search_depth,
-        &config.excluded_bookmarks,
+        &config.bookmarks,
         &mut data.bookmarks,
         repo.view(),
         store,
@@ -139,8 +142,7 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
 fn find_parent_bookmarks<'a>(
     commit_id: &CommitId,
     depth: usize,
-    max_depth: Option<usize>,
-    excluded_bookmarks: &Vec<Glob>,
+    config: &BookmarkConfig,
     bookmarks: &mut BTreeMap<&'a str, usize>,
     view: &'a View,
     store: &Arc<Store>,
@@ -152,7 +154,7 @@ fn find_parent_bookmarks<'a>(
 
     if !tmp.is_empty() {
         'bookmark: for bookmark in tmp {
-            for glob in excluded_bookmarks {
+            for glob in &config.exclude {
                 if glob.matches(bookmark) {
                     continue 'bookmark;
                 }
@@ -169,7 +171,7 @@ fn find_parent_bookmarks<'a>(
         return Ok(());
     }
 
-    if let Some(max_depth) = max_depth {
+    if let Some(max_depth) = config.search_depth {
         if depth >= max_depth {
             return Ok(());
         }
@@ -178,15 +180,7 @@ fn find_parent_bookmarks<'a>(
     let commit = store.get_commit(commit_id)?;
 
     for p in commit.parent_ids() {
-        find_parent_bookmarks(
-            p,
-            depth + 1,
-            max_depth,
-            excluded_bookmarks,
-            bookmarks,
-            view,
-            store,
-        )?;
+        find_parent_bookmarks(p, depth + 1, config, bookmarks, view, store)?;
     }
     Ok(())
 }

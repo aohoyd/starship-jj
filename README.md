@@ -15,7 +15,7 @@ starship plugin for jj
   - [x] define a custom template for how these changes should be presented.
 - [x] print in colors.
 - [ ] customize settings via config file.
-- [ ] print a default config file.
+- [x] print a default config file.
 - [x] print the path to the default config file path.
 
 ## Installation

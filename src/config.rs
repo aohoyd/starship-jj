@@ -17,9 +17,17 @@ mod state;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
+    #[serde(rename = "module")]
     modules: Vec<ModuleConfig>,
-    pub bookmark_search_depth: Option<usize>,
-    pub excluded_bookmarks: Vec<Glob>,
+    #[serde(default)]
+    pub bookmarks: BookmarkConfig,
+}
+
+#[derive(Deserialize, Serialize, Debug, Default)]
+pub struct BookmarkConfig {
+    pub search_depth: Option<usize>,
+    #[serde(default)]
+    pub exclude: Vec<Glob>,
 }
 
 impl Config {
@@ -39,6 +47,7 @@ impl Config {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+#[serde(tag = "type")]
 enum ModuleConfig {
     Bookmarks(Bookmarks),
     Commit(Commit),
@@ -55,8 +64,7 @@ impl Default for Config {
                 ModuleConfig::State(Default::default()),
                 ModuleConfig::Metrics(Default::default()),
             ],
-            bookmark_search_depth: None,
-            excluded_bookmarks: Default::default(),
+            bookmarks: Default::default(),
         }
     }
 }
