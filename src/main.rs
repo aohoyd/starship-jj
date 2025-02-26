@@ -1,10 +1,10 @@
-use std::{collections::BTreeMap, process::ExitCode, sync::Arc};
+use std::{collections::BTreeMap, io::Write, process::ExitCode, sync::Arc};
 
-use args::{CustomCommand, StarshipCommands};
-use config::util::Glob;
+use args::{ConfigCommands, CustomCommand, StarshipCommands};
+use config::BookmarkConfig;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
-    command_error::CommandError,
+    command_error::{user_error, CommandError},
     diff_util::{get_copy_records, DiffStatOptions, DiffStats},
     ui::Ui,
 };
@@ -19,13 +19,40 @@ fn starship(
     command_helper: &CommandHelper,
     command: CustomCommand,
 ) -> Result<(), CommandError> {
+    #[cfg(feature = "json-schema")]
+    {
+        let schema = schemars::schema_for!(config::Config);
+        println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+        return Ok(());
+    }
+
     let CustomCommand::Starship(args) = command;
     match args.command {
         StarshipCommands::Prompt => print_prompt(ui, command_helper)?,
-        StarshipCommands::Config(_) => todo!(),
+        StarshipCommands::Config(ConfigCommands::Path) => {
+            let config_dir = get_config_path()?;
+
+            writeln!(ui.stdout(), "{}", config_dir)?;
+        }
+        StarshipCommands::Config(ConfigCommands::Default) => {
+            let c = toml::to_string_pretty(&config::Config::default()).map_err(user_error)?;
+
+            writeln!(ui.stdout(), "{}", c)?;
+        }
     }
 
     Ok(())
+}
+
+fn get_config_path() -> Result<String, CommandError> {
+    let config_dir = dirs::config_dir()
+        .or_else(|| dirs::home_dir().map(|p| p.join(".config")))
+        .ok_or_else(|| user_error("Failed to find config dir"))?;
+    let config_dir = config_dir.join("starship-jj/starship-jj.toml");
+    let config_dir = config_dir
+        .to_str()
+        .ok_or_else(|| user_error("The config path is not valid UTF-8"))?;
+    Ok(config_dir.to_string())
 }
 
 #[derive(Default)]
@@ -58,7 +85,13 @@ struct CommitDiff {
 }
 
 fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), CommandError> {
-    let config = config::Config::default();
+    let config_dir = get_config_path()?;
+    let config = if std::fs::exists(&config_dir)? {
+        toml::from_str(&std::fs::read_to_string(config_dir)?).map_err(user_error)?
+    } else {
+        config::Config::default()
+    };
+
     let workspace_helper = command_helper.workspace_helper(ui)?;
     let repo = workspace_helper.repo();
     let store = repo.store();
@@ -72,10 +105,10 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
 
     let matcher = workspace_helper.parse_file_patterns(ui, &[])?.to_matcher();
     let change_id = commit.change_id();
-    let change = repo.resolve_change_id(&change_id);
+    let change = repo.resolve_change_id(change_id);
     let mut copy_records = CopyRecords::default();
     for parent in commit.parent_ids() {
-        let records = get_copy_records(repo.store(), parent, &commit_id, &matcher)?;
+        let records = get_copy_records(repo.store(), parent, commit_id, &matcher)?;
         copy_records.add_records(records)?;
     }
 
@@ -110,8 +143,7 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
     find_parent_bookmarks(
         commit_id,
         0,
-        config.bookmark_search_depth,
-        &config.excluded_bookmarks,
+        &config.bookmarks,
         &mut data.bookmarks,
         repo.view(),
         store,
@@ -127,26 +159,26 @@ fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), Comma
 fn find_parent_bookmarks<'a>(
     commit_id: &CommitId,
     depth: usize,
-    max_depth: Option<usize>,
-    excluded_bookmarks: &Vec<Glob>,
+    config: &BookmarkConfig,
     bookmarks: &mut BTreeMap<&'a str, usize>,
     view: &'a View,
     store: &Arc<Store>,
 ) -> Result<(), CommandError> {
     let tmp: Vec<_> = view
-        .local_bookmarks_for_commit(&commit_id)
+        .local_bookmarks_for_commit(commit_id)
         .map(|(name, _)| name)
         .collect();
 
     if !tmp.is_empty() {
         'bookmark: for bookmark in tmp {
-            for glob in excluded_bookmarks {
+            for glob in &config.exclude {
+                #[cfg(not(feature = "json-schema"))]
                 if glob.matches(bookmark) {
                     continue 'bookmark;
                 }
             }
             bookmarks
-                .entry(&bookmark)
+                .entry(bookmark)
                 .and_modify(|v| {
                     if *v > depth {
                         *v = depth
@@ -157,7 +189,7 @@ fn find_parent_bookmarks<'a>(
         return Ok(());
     }
 
-    if let Some(max_depth) = max_depth {
+    if let Some(max_depth) = config.search_depth {
         if depth >= max_depth {
             return Ok(());
         }
@@ -166,15 +198,7 @@ fn find_parent_bookmarks<'a>(
     let commit = store.get_commit(commit_id)?;
 
     for p in commit.parent_ids() {
-        find_parent_bookmarks(
-            p,
-            depth + 1,
-            max_depth,
-            excluded_bookmarks,
-            bookmarks,
-            view,
-            store,
-        )?;
+        find_parent_bookmarks(p, depth + 1, config, bookmarks, view, store)?;
     }
     Ok(())
 }

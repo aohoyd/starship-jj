@@ -1,15 +1,21 @@
 use std::io::Write;
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::Style;
 
+/// Prints the working copies commit text
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Commit {
+    /// Maximum length the commit text will be truncated to.
+    max_length: Option<usize>,
+    /// Controls how the commit text is rendered.
     #[serde(flatten)]
     style: Style,
-    max_length: Option<usize>,
 }
 
 impl Default for Commit {
@@ -22,11 +28,16 @@ impl Default for Commit {
 }
 
 impl Commit {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        data: &crate::JJData,
+        module_separator: &str,
+    ) -> Result<(), CommandError> {
         let first_line = data
             .commit
             .desc
-            .split_once(|c| c == '\r' || c == '\n')
+            .split_once(['\r', '\n'])
             .map(|(line, _rest)| line)
             .unwrap_or(&data.commit.desc);
 
@@ -35,10 +46,10 @@ impl Commit {
 
             match self.max_length {
                 Some(max_len) if first_line.len() > max_len => {
-                    write!(io, "\"{}…\" ", &first_line[..max_len - 1])?;
+                    write!(io, "\"{}…\"{module_separator}", &first_line[..max_len - 1])?;
                 }
                 _ => {
-                    write!(io, "\"{}\" ", first_line)?;
+                    write!(io, "\"{}\"{module_separator}", first_line)?;
                 }
             }
         }

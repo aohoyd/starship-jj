@@ -4,16 +4,25 @@ use std::{
 };
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::{Color, Style};
 
+/// Prints information about bookmarks in the working copies ancestors.
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Bookmarks {
+    /// Text that will be rendered between each bookmark.
+    separator: String,
+    /// Controls how bookmarks are rendered.
     #[serde(flatten)]
     style: Style,
+    /// A suffix that will be printed when the given bookmark is behing the working copy.
     behind_symbol: Option<char>,
-    number: Option<usize>,
+    /// Maximum amout of bookmarks that will be rendered.
+    max_bookmarks: Option<usize>,
 }
 
 impl Default for Bookmarks {
@@ -24,13 +33,19 @@ impl Default for Bookmarks {
                 ..Default::default()
             },
             behind_symbol: Some('⇡'),
-            number: None,
+            max_bookmarks: None,
+            separator: " ".to_string(),
         }
     }
 }
 
 impl Bookmarks {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        data: &crate::JJData,
+        module_separator: &str,
+    ) -> Result<(), CommandError> {
         self.style.print(io)?;
 
         let mut ordered: BTreeMap<usize, BTreeSet<&str>> = BTreeMap::new();
@@ -51,14 +66,16 @@ impl Bookmarks {
         let mut counter = 0;
         'outer: for (behind, bookmarks) in ordered {
             for name in bookmarks {
-                if let Some(number) = self.number {
+                if let Some(number) = self.max_bookmarks {
                     if counter >= number {
-                        write!(io, "…")?;
+                        write!(io, "…{module_separator}")?;
+                        // set counter to 0 so we don't print the module separator twice
+                        counter = 0;
                         break 'outer;
                     }
                 }
                 if counter > 0 {
-                    write!(io, " ")?;
+                    write!(io, "{}", self.separator)?;
                 }
                 write!(io, "{}", name)?;
                 if behind != 0 {
@@ -70,8 +87,10 @@ impl Bookmarks {
                 counter += 1;
             }
         }
+        if counter != 0 {
+            write!(io, "{module_separator}")?;
+        }
 
-        write!(io, " ")?;
         Ok(())
     }
 }

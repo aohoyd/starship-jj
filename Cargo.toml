@@ -12,13 +12,20 @@ documentation = "lanastara.gitlab.io/starship_jj/starship_jj"
 
 [lints]
 
+[features]
+default=[]
+json-schema = ["dep:schemars", "dep:serde_json"]
+
 [dependencies]
 jj-lib = "0.26"
 jj-cli = "0.26"
 clap = "4.5.31"
 colored = "3.0"
-glob="0.3"
+dirs = "6.0"
+glob = "0.3"
 toml = "0.8"
 pollster = "0.3.0"
+schemars = { version = "0.8", optional = true }
 serde = { version = "1.0", features = ["derive"] }
+serde_json={version="1.0", optional = true}
 tinytemplate = "1.2.1"

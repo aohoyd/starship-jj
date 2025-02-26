@@ -1,50 +1,58 @@
 use std::io::Write;
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::util::Color;
+use super::util::{Color, Style};
 
+/// Prints the amount of changes in the working copy
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Metrics {
-    #[serde(flatten)]
-    style: super::util::Style,
-
+    /// Controls how the changes are rendered, use {added}, {removed} and {changed} to render the number of changes.
     template: String,
 
     // added_files: Style,
     // removed_files: Style,
-    changed_files: Style,
+    /// Controlls how the number of changed files is rendered.
+    changed_files: Metric,
 
-    added_lines: Style,
-    removed_lines: Style,
+    /// Controlls how the number of added lines is rendered.
+    added_lines: Metric,
+    /// Controlls how the number of removed lines is rendered.
+    removed_lines: Metric,
+
+    #[serde(flatten)]
+    style: Style,
 }
 
 impl Default for Metrics {
     fn default() -> Self {
         Self {
-            style: super::util::Style {
+            style: Style {
                 color: Some(Color::Magenta),
                 ..Default::default()
             },
             template: "[{changed} {added}{removed}]".to_string(),
-            changed_files: Style {
-                style: super::util::Style {
+            changed_files: Metric {
+                style: Style {
                     color: Some(Color::Cyan),
                     ..Default::default()
                 },
                 ..Default::default()
             },
-            added_lines: Style {
-                style: super::util::Style {
+            added_lines: Metric {
+                style: Style {
                     color: Some(Color::Green),
                     ..Default::default()
                 },
                 prefix: "+".to_string(),
                 ..Default::default()
             },
-            removed_lines: Style {
-                style: super::util::Style {
+            removed_lines: Metric {
+                style: Style {
                     color: Some(Color::Red),
                     ..Default::default()
                 },
@@ -55,15 +63,18 @@ impl Default for Metrics {
     }
 }
 
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug, Default)]
-struct Style {
-    #[serde(flatten)]
-    style: super::util::Style,
-    suffix: String,
+struct Metric {
+    #[serde(default)]
     prefix: String,
+    #[serde(default)]
+    suffix: String,
+    #[serde(flatten)]
+    style: Style,
 }
-impl Style {
-    fn format(&self, number: usize, global_style: &super::util::Style) -> String {
+impl Metric {
+    fn format(&self, number: usize, global_style: &Style) -> String {
         format!(
             "{}{}{}{}{}",
             self.style.format(),
@@ -83,7 +94,12 @@ struct Context {
 }
 
 impl Metrics {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        data: &crate::JJData,
+        module_separator: &str,
+    ) -> Result<(), CommandError> {
         let context = Context {
             added: self
                 .added_lines
@@ -113,7 +129,9 @@ impl Metrics {
             )
         })?;
 
-        write!(io, "{} ", s)?;
+        self.style.print(io)?;
+
+        write!(io, "{}{module_separator}", s)?;
 
         Ok(())
     }

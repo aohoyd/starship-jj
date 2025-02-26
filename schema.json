@@ -1,0 +1,413 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Config",
+  "type": "object",
+  "required": [
+    "module",
+    "module_separator"
+  ],
+  "properties": {
+    "bookmarks": {
+      "description": "Controls the behaviour of the bookmark finding algorythm.",
+      "default": {
+        "exclude": [],
+        "search_depth": null
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/BookmarkConfig"
+        }
+      ]
+    },
+    "module": {
+      "description": "Modules that will be rendered.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ModuleConfig"
+      }
+    },
+    "module_separator": {
+      "description": "Text that will be printed between each Module.",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "BookmarkConfig": {
+      "type": "object",
+      "properties": {
+        "exclude": {
+          "description": "Exclude certain bookmarks from the search (supports globs)",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "search_depth": {
+          "description": "Controls how far we are looking back to find bookmarks.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Color": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Black",
+            "Red",
+            "Green",
+            "Yellow",
+            "Blue",
+            "Magenta",
+            "Cyan",
+            "White",
+            "BrightBlack",
+            "BrightRed",
+            "BrightGreen",
+            "BrightYellow",
+            "BrightBlue",
+            "BrightMagenta",
+            "BrightCyan",
+            "BrightWhite"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "TrueColor"
+          ],
+          "properties": {
+            "TrueColor": {
+              "type": "object",
+              "required": [
+                "b",
+                "g",
+                "r"
+              ],
+              "properties": {
+                "b": {
+                  "type": "integer",
+                  "format": "uint8",
+                  "minimum": 0.0
+                },
+                "g": {
+                  "type": "integer",
+                  "format": "uint8",
+                  "minimum": 0.0
+                },
+                "r": {
+                  "type": "integer",
+                  "format": "uint8",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Metric": {
+      "type": "object",
+      "properties": {
+        "bg_color": {
+          "description": "Background Color",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "color": {
+          "description": "Text Color",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "default": "",
+          "type": "string"
+        },
+        "suffix": {
+          "default": "",
+          "type": "string"
+        }
+      }
+    },
+    "ModuleConfig": {
+      "description": "A module that prints some info about the current jj repo",
+      "oneOf": [
+        {
+          "description": "Prints information about bookmarks in the working copies ancestors.",
+          "type": "object",
+          "required": [
+            "separator",
+            "type"
+          ],
+          "properties": {
+            "behind_symbol": {
+              "description": "A suffix that will be printed when the given bookmark is behing the working copy.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 1,
+              "minLength": 1
+            },
+            "bg_color": {
+              "description": "Background Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "color": {
+              "description": "Text Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "max_bookmarks": {
+              "description": "Maximum amout of bookmarks that will be rendered.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint",
+              "minimum": 0.0
+            },
+            "separator": {
+              "description": "Text that will be rendered between each bookmark.",
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "Bookmarks"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Prints the working copies commit text",
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "bg_color": {
+              "description": "Background Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "color": {
+              "description": "Text Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "max_length": {
+              "description": "Maximum length the commit text will be truncated to.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint",
+              "minimum": 0.0
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "Commit"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Prints a warning if the working copy contains any conflicts, is divergent or hidden",
+          "type": "object",
+          "required": [
+            "conflict",
+            "divergent",
+            "hidden",
+            "separator",
+            "type"
+          ],
+          "properties": {
+            "conflict": {
+              "description": "Controls how the conflict warning will be rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Status"
+                }
+              ]
+            },
+            "divergent": {
+              "description": "Controls how the divergence warning will be rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Status"
+                }
+              ]
+            },
+            "hidden": {
+              "description": "Controls how the hidden warning will be rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Status"
+                }
+              ]
+            },
+            "separator": {
+              "description": "Text that will be printed between each Warning.",
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "State"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Prints the amount of changes in the working copy",
+          "type": "object",
+          "required": [
+            "added_lines",
+            "changed_files",
+            "removed_lines",
+            "template",
+            "type"
+          ],
+          "properties": {
+            "added_lines": {
+              "description": "Controlls how the number of added lines is rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Metric"
+                }
+              ]
+            },
+            "bg_color": {
+              "description": "Background Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "changed_files": {
+              "description": "Controlls how the number of changed files is rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Metric"
+                }
+              ]
+            },
+            "color": {
+              "description": "Text Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "removed_lines": {
+              "description": "Controlls how the number of removed lines is rendered.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Metric"
+                }
+              ]
+            },
+            "template": {
+              "description": "Controls how the changes are rendered, use {added}, {removed} and {changed} to render the number of changes.",
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "Metrics"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Status": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "bg_color": {
+          "description": "Background Color",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "color": {
+          "description": "Text Color",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "description": "The text that should be printed when the working copy has the given state.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
