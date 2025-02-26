@@ -22,4 +22,5 @@ All notable changes to this project will be documented in this file. See [conven
 ### 📚 Documentation
 
 - create json schema for config- ([f074121](https://gitlab.com/Lanastara/starship-jj/-/commit/f074121900b447eea302fc5f4119d4d00fb3ee3d)) - Lilly Mannhal
+- added sample config- ([eb64656](https://gitlab.com/Lanastara/starship-jj/-/commit/eb64656dffc5f134fdfbc20f42579a8f29f802d8)) - Lilly Mannhal
 
