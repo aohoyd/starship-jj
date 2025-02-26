@@ -26,7 +26,7 @@ impl Commit {
         let first_line = data
             .commit
             .desc
-            .split_once(|c| c == '\r' || c == '\n')
+            .split_once(['\r', '\n'])
             .map(|(line, _rest)| line)
             .unwrap_or(&data.commit.desc);
 

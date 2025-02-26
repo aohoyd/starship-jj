@@ -27,7 +27,7 @@ impl Config {
         for module in self.modules.iter() {
             match module {
                 ModuleConfig::Bookmarks(bookmarks) => {
-                    bookmarks.print(io, &data)?;
+                    bookmarks.print(io, data)?;
                 }
                 ModuleConfig::Commit(commit_desc) => commit_desc.print(io, data)?,
                 ModuleConfig::State(commit_warnings) => commit_warnings.print(io, data)?,

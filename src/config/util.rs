@@ -74,7 +74,6 @@ impl Style {
         if let Some(color) = self.color {
             if !first {
                 s.push(';');
-            } else {
             }
             s.push_str(colored::Color::from(color).to_fg_str().as_ref());
             first = false;
@@ -93,6 +92,7 @@ impl Style {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, Copy)]
+#[allow(clippy::enum_variant_names)]
 pub enum Color {
     Black,
     Red,
