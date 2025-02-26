@@ -10,7 +10,6 @@ readme = "README.md"
 homepage = "https://gitlab.com/Lanastara/starship-jj"
 repository = "https://gitlab.com/Lanastara/starship-jj"
 keywords = [
-  "command-line",
   "command-line-tool",
   "jj",
   "jujutsu",
