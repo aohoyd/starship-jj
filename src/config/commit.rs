@@ -1,13 +1,19 @@
 use std::io::Write;
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::Style;
 
+/// Prints the working copies commit text
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Commit {
+    /// Maximum length the commit text will be truncated to.
     max_length: Option<usize>,
+    /// Controls how the commit text is rendered.
     #[serde(flatten)]
     style: Style,
 }

@@ -1,5 +1,7 @@
 use glob::Pattern;
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 
@@ -25,9 +27,12 @@ impl Glob {
     }
 }
 
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Style {
+    /// Text Color
     pub color: Option<Color>,
+    /// Background Color
     pub bg_color: Option<Color>,
 }
 
@@ -70,6 +75,7 @@ impl Style {
     }
 }
 
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug, Clone, Copy)]
 #[allow(clippy::enum_variant_names)]
 pub enum Color {

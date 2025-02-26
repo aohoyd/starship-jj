@@ -1,19 +1,27 @@
 use std::io::Write;
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::{Color, Style};
 
+/// Prints the amount of changes in the working copy
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Metrics {
+    /// Controls how the changes are rendered, use {added}, {removed} and {changed} to render the number of changes.
     template: String,
 
     // added_files: Style,
     // removed_files: Style,
+    /// Controlls how the number of changed files is rendered.
     changed_files: Metric,
 
+    /// Controlls how the number of added lines is rendered.
     added_lines: Metric,
+    /// Controlls how the number of removed lines is rendered.
     removed_lines: Metric,
 
     #[serde(flatten)]
@@ -55,6 +63,7 @@ impl Default for Metrics {
     }
 }
 
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug, Default)]
 struct Metric {
     #[serde(default)]

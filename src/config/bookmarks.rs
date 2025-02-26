@@ -4,16 +4,24 @@ use std::{
 };
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::{Color, Style};
 
+/// Prints information about bookmarks in the working copies ancestors.
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Bookmarks {
+    /// Text that will be rendered between each bookmark.
     separator: String,
+    /// Controls how bookmarks are rendered.
     #[serde(flatten)]
     style: Style,
+    /// A suffix that will be printed when the given bookmark is behing the working copy.
     behind_symbol: Option<char>,
+    /// Maximum amout of bookmarks that will be rendered.
     max_bookmarks: Option<usize>,
 }
 

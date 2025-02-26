@@ -19,6 +19,13 @@ fn starship(
     command_helper: &CommandHelper,
     command: CustomCommand,
 ) -> Result<(), CommandError> {
+    #[cfg(feature = "json-schema")]
+    {
+        let schema = schemars::schema_for!(config::Config);
+        println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+        return Ok(());
+    }
+
     let CustomCommand::Starship(args) = command;
     match args.command {
         StarshipCommands::Prompt => print_prompt(ui, command_helper)?,
@@ -165,6 +172,7 @@ fn find_parent_bookmarks<'a>(
     if !tmp.is_empty() {
         'bookmark: for bookmark in tmp {
             for glob in &config.exclude {
+                #[cfg(not(feature = "json-schema"))]
                 if glob.matches(bookmark) {
                     continue 'bookmark;
                 }

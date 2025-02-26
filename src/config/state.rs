@@ -1,20 +1,30 @@
 use std::io::Write;
 
 use jj_cli::command_error::CommandError;
+#[cfg(feature = "json-schema")]
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::util::Style;
 
+/// Prints a warning if the working copy contains any conflicts, is divergent or hidden
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 pub struct State {
+    /// Text that will be printed between each Warning.
     separator: String,
+    /// Controls how the conflict warning will be rendered.
     conflict: Status,
+    /// Controls how the divergence warning will be rendered.
     divergent: Status,
+    /// Controls how the hidden warning will be rendered.
     hidden: Status,
 }
 
+#[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
 struct Status {
+    /// The text that should be printed when the working copy has the given state.
     text: String,
     #[serde(flatten)]
     style: Style,
