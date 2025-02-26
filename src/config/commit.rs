@@ -7,9 +7,9 @@ use super::util::Style;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Commit {
+    max_length: Option<usize>,
     #[serde(flatten)]
     style: Style,
-    max_length: Option<usize>,
 }
 
 impl Default for Commit {
@@ -22,7 +22,12 @@ impl Default for Commit {
 }
 
 impl Commit {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        data: &crate::JJData,
+        module_separator: &str,
+    ) -> Result<(), CommandError> {
         let first_line = data
             .commit
             .desc
@@ -35,10 +40,10 @@ impl Commit {
 
             match self.max_length {
                 Some(max_len) if first_line.len() > max_len => {
-                    write!(io, "\"{}…\" ", &first_line[..max_len - 1])?;
+                    write!(io, "\"{}…\"{module_separator}", &first_line[..max_len - 1])?;
                 }
                 _ => {
-                    write!(io, "\"{}\" ", first_line)?;
+                    write!(io, "\"{}\"{module_separator}", first_line)?;
                 }
             }
         }

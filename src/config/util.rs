@@ -35,27 +35,15 @@ impl Style {
     pub fn print(&self, io: &mut impl Write) -> Result<(), CommandError> {
         write!(io, "\x1B[")?;
 
-        let mut first = true;
-
-        if self.bg_color.is_none() && self.color.is_none() {
-            write!(io, "0")?;
-        }
-
         if let Some(color) = self.color {
-            if first {
-                write!(io, "{}", colored::Color::from(color).to_fg_str())?;
-            } else {
-                write!(io, ";{}", colored::Color::from(color).to_fg_str())?;
-            }
-            first = false;
+            write!(io, "{}", colored::Color::from(color).to_fg_str())?;
+        } else {
+            write!(io, "39")?;
         }
         if let Some(color) = self.bg_color {
-            if first {
-                write!(io, "{}", colored::Color::from(color).to_bg_str())?;
-            } else {
-                write!(io, ";{}", colored::Color::from(color).to_bg_str())?;
-            }
-            //first = false;
+            write!(io, ";{}", colored::Color::from(color).to_bg_str())?;
+        } else {
+            write!(io, ";49")?;
         }
 
         write!(io, "m")?;
@@ -65,25 +53,16 @@ impl Style {
     pub fn format(&self) -> String {
         let mut s = "\x1B[".to_string();
 
-        let mut first = true;
-
-        if self.bg_color.is_none() && self.color.is_none() {
-            s.push('0');
-        }
-
         if let Some(color) = self.color {
-            if !first {
-                s.push(';');
-            }
             s.push_str(colored::Color::from(color).to_fg_str().as_ref());
-            first = false;
+        } else {
+            s.push_str("39");
         }
+        s.push(';');
         if let Some(color) = self.bg_color {
-            if !first {
-                s.push(';');
-            }
             s.push_str(colored::Color::from(color).to_bg_str().as_ref());
-            //first = false;
+        } else {
+            s.push_str("49");
         }
 
         s.push('m');

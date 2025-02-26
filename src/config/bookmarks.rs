@@ -10,10 +10,11 @@ use super::util::{Color, Style};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Bookmarks {
+    separator: String,
     #[serde(flatten)]
     style: Style,
     behind_symbol: Option<char>,
-    number: Option<usize>,
+    max_bookmarks: Option<usize>,
 }
 
 impl Default for Bookmarks {
@@ -24,13 +25,19 @@ impl Default for Bookmarks {
                 ..Default::default()
             },
             behind_symbol: Some('⇡'),
-            number: None,
+            max_bookmarks: None,
+            separator: " ".to_string(),
         }
     }
 }
 
 impl Bookmarks {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        data: &crate::JJData,
+        module_separator: &str,
+    ) -> Result<(), CommandError> {
         self.style.print(io)?;
 
         let mut ordered: BTreeMap<usize, BTreeSet<&str>> = BTreeMap::new();
@@ -51,14 +58,16 @@ impl Bookmarks {
         let mut counter = 0;
         'outer: for (behind, bookmarks) in ordered {
             for name in bookmarks {
-                if let Some(number) = self.number {
+                if let Some(number) = self.max_bookmarks {
                     if counter >= number {
-                        write!(io, "…")?;
+                        write!(io, "…{module_separator}")?;
+                        // set counter to 0 so we don't print the module separator twice
+                        counter = 0;
                         break 'outer;
                     }
                 }
                 if counter > 0 {
-                    write!(io, " ")?;
+                    write!(io, "{}", self.separator)?;
                 }
                 write!(io, "{}", name)?;
                 if behind != 0 {
@@ -71,7 +80,7 @@ impl Bookmarks {
             }
         }
         if counter != 0 {
-            write!(io, " ")?;
+            write!(io, "{module_separator}")?;
         }
 
         Ok(())

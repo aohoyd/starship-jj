@@ -17,6 +17,8 @@ mod state;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
+    module_separator: String,
+    #[serde(default)]
     pub bookmarks: BookmarkConfig,
     #[serde(rename = "module")]
     modules: Vec<ModuleConfig>,
@@ -34,13 +36,20 @@ impl Config {
         for module in self.modules.iter() {
             match module {
                 ModuleConfig::Bookmarks(bookmarks) => {
-                    bookmarks.print(io, data)?;
+                    bookmarks.print(io, data, &self.module_separator)?;
                 }
-                ModuleConfig::Commit(commit_desc) => commit_desc.print(io, data)?,
-                ModuleConfig::State(commit_warnings) => commit_warnings.print(io, data)?,
-                ModuleConfig::Metrics(commit_diff) => commit_diff.print(io, data)?,
+                ModuleConfig::Commit(commit_desc) => {
+                    commit_desc.print(io, data, &self.module_separator)?
+                }
+                ModuleConfig::State(commit_warnings) => {
+                    commit_warnings.print(io, data, &self.module_separator)?
+                }
+                ModuleConfig::Metrics(commit_diff) => {
+                    commit_diff.print(io, data, &self.module_separator)?
+                }
             }
         }
+        util::Style::default().print(io)?;
         Ok(())
     }
 }
@@ -57,6 +66,7 @@ enum ModuleConfig {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            module_separator: " ".to_string(),
             modules: vec![
                 ModuleConfig::Bookmarks(Default::default()),
                 ModuleConfig::Commit(Default::default()),
