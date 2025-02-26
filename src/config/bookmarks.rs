@@ -70,8 +70,10 @@ impl Bookmarks {
                 counter += 1;
             }
         }
+        if counter != 0 {
+            write!(io, " ")?;
+        }
 
-        write!(io, " ")?;
         Ok(())
     }
 }

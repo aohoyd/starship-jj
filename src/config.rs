@@ -17,10 +17,9 @@ mod state;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
+    pub bookmarks: BookmarkConfig,
     #[serde(rename = "module")]
     modules: Vec<ModuleConfig>,
-    #[serde(default)]
-    pub bookmarks: BookmarkConfig,
 }
 
 #[derive(Deserialize, Serialize, Debug, Default)]

@@ -23,14 +23,7 @@ fn starship(
     match args.command {
         StarshipCommands::Prompt => print_prompt(ui, command_helper)?,
         StarshipCommands::Config(ConfigCommands::Path) => {
-            let config_dir = dirs::config_dir()
-                .or_else(|| dirs::home_dir().map(|p| p.join(".config")))
-                .ok_or_else(|| user_error("Failed to find config dir"))?;
-            let config_dir = config_dir.join("starship-jj/starship-jj.toml");
-
-            let config_dir = config_dir
-                .to_str()
-                .ok_or_else(|| user_error("The config path is not valid UTF-8"))?;
+            let config_dir = get_config_path()?;
 
             writeln!(ui.stdout(), "{}", config_dir)?;
         }
@@ -42,6 +35,17 @@ fn starship(
     }
 
     Ok(())
+}
+
+fn get_config_path() -> Result<String, CommandError> {
+    let config_dir = dirs::config_dir()
+        .or_else(|| dirs::home_dir().map(|p| p.join(".config")))
+        .ok_or_else(|| user_error("Failed to find config dir"))?;
+    let config_dir = config_dir.join("starship-jj/starship-jj.toml");
+    let config_dir = config_dir
+        .to_str()
+        .ok_or_else(|| user_error("The config path is not valid UTF-8"))?;
+    Ok(config_dir.to_string())
 }
 
 #[derive(Default)]
@@ -74,7 +78,13 @@ struct CommitDiff {
 }
 
 fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), CommandError> {
-    let config = config::Config::default();
+    let config_dir = get_config_path()?;
+    let config = if std::fs::exists(&config_dir)? {
+        toml::from_str(&std::fs::read_to_string(config_dir)?).map_err(user_error)?
+    } else {
+        config::Config::default()
+    };
+
     let workspace_helper = command_helper.workspace_helper(ui)?;
     let repo = workspace_helper.repo();
     let store = repo.store();
