@@ -1,10 +1,10 @@
-use std::{collections::BTreeMap, io::Write, process::ExitCode, sync::Arc};
+use std::{collections::BTreeMap, io::Write, path::PathBuf, process::ExitCode, sync::Arc};
 
 use args::{ConfigCommands, CustomCommand, StarshipCommands};
 use config::BookmarkConfig;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
-    command_error::{user_error, CommandError},
+    command_error::{user_error, user_error_with_message, CommandError},
     diff_util::{get_copy_records, DiffStatOptions, DiffStats},
     ui::Ui,
 };
@@ -28,7 +28,9 @@ fn starship(
 
     let CustomCommand::Starship(args) = command;
     match args.command {
-        StarshipCommands::Prompt => print_prompt(ui, command_helper)?,
+        StarshipCommands::Prompt { starship_config } => {
+            print_prompt(ui, command_helper, &starship_config)?
+        }
         StarshipCommands::Config(ConfigCommands::Path) => {
             let config_dir = get_config_path()?;
 
@@ -84,12 +86,24 @@ struct CommitDiff {
     lines_removed: usize,
 }
 
-fn print_prompt(ui: &mut Ui, command_helper: &CommandHelper) -> Result<(), CommandError> {
-    let config_dir = get_config_path()?;
-    let config = if std::fs::exists(&config_dir)? {
-        toml::from_str(&std::fs::read_to_string(config_dir)?).map_err(user_error)?
+fn print_prompt(
+    ui: &mut Ui,
+    command_helper: &CommandHelper,
+    config_path: &Option<PathBuf>,
+) -> Result<(), CommandError> {
+    let config = if let Some(config_path) = config_path {
+        toml::from_str(
+            &std::fs::read_to_string(config_path)
+                .map_err(|e| user_error_with_message("Failed to read Config File", e))?,
+        )
+        .map_err(|e| user_error_with_message("Failed to read Config File", e))?
     } else {
-        config::Config::default()
+        let config_dir = get_config_path()?;
+        if std::fs::exists(&config_dir)? {
+            toml::from_str(&std::fs::read_to_string(config_dir)?).map_err(user_error)?
+        } else {
+            config::Config::default()
+        }
     };
 
     let workspace_helper = command_helper.workspace_helper(ui)?;

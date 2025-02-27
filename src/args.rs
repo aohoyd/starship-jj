@@ -9,7 +9,11 @@ pub enum CustomCommand {
 #[derive(Debug, Clone, clap::Subcommand)]
 pub enum StarshipCommands {
     /// Print the configured Prompt
-    Prompt,
+    Prompt {
+        /// Path to the jj-starship config file
+        #[arg(long, env = "STARSHIP_JJ_CONFIG")]
+        starship_config: Option<PathBuf>,
+    },
 
     /// Interact with the configuration
     #[command(subcommand)]
@@ -26,9 +30,6 @@ pub enum ConfigCommands {
 
 #[derive(clap::Args, Clone, Debug)]
 pub struct StarshipOptions {
-    /// Path to the jj-starship config file
-    #[arg(long)]
-    pub starship_config: Option<PathBuf>,
     #[command(subcommand)]
     pub command: StarshipCommands,
 }
