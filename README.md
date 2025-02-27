@@ -17,12 +17,12 @@ starship plugin for jj
 - [x] customize settings via config file.
 - [x] print a default config file.
 - [x] print the path to the default config file path.
+- [ ] set custom config location via command line or environment args.
 
 ## Installation
 
 ### From Source
 
-!Warning this crate is not yet pushed to crates.io so installaton doesn't work yet.
 ```bash
   cargo install starship-jj --locked
 ```
@@ -44,5 +44,17 @@ ${custom.jj}\
 command='''starship-jj --ignore-working-copy starship prompt'''
 format = "[$symbol](blue bold) $output "
 symbol = "󱗆 "
-detect_folders=[".jj"]
+when = "jj root --ignore-working-copy"
 ```
+
+2. Configure what you want to see
+
+starship-jj will load a configuration toml file either from the location provided via the --starship-config argument (not implemented yet) or from you OSs default config dir (Linus: "$XDG_CONFIG_DIR/starship-jj/starship-jj.toml" Windows: "%APPDATA%/starship-jj/starship-jj.toml").
+
+If no config file exist starship-jj will use some sane default values.
+
+You can see the default config location by using `starship-jj starship config path`.
+
+You can also print the default configuration using `starship-jj starship config default`
+
+The Repository also contains a starship-jj.toml file with all possible keys and documentation.
