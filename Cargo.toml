@@ -1,19 +1,27 @@
 [package]
 name = "starship-jj"
-version = "0.1.0"
+version = "0.2.0"
 description = "starship plugin for jj"
 resolver = "2"
 edition = "2021"
 authors = ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://gitlab.com/Lanastara/starship-jj/-"
-documentation = "lanastara.gitlab.io/starship_jj/starship_jj"
+homepage = "https://gitlab.com/Lanastara/starship-jj"
+repository = "https://gitlab.com/Lanastara/starship-jj"
+keywords = [
+  "command-line-tool",
+  "jj",
+  "jujutsu",
+  "prompt",
+  "starship",
+]
+categories = ["command-line-utilities"]
 
 [lints]
 
 [features]
-default=[]
+default = []
 json-schema = ["dep:schemars", "dep:serde_json"]
 
 [dependencies]
@@ -27,5 +35,5 @@ toml = "0.8"
 pollster = "0.3.0"
 schemars = { version = "0.8", optional = true }
 serde = { version = "1.0", features = ["derive"] }
-serde_json={version="1.0", optional = true}
+serde_json = { version = "1.0", optional = true }
 tinytemplate = "1.2.1"

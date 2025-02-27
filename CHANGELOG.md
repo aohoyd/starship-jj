@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
-## [unreleased]
+## [0.2.0](https://gitlab.com/Lanastara/starship-jj/-/compare/v0.1.0..v0.2.0) - 2025-02-27
+
+### 🚀 Features
+
+- use --starship-config argument- ([4145e01](https://gitlab.com/Lanastara/starship-jj/-/commit/4145e014505c046b25672bf48fb1718d00047a2d)) - Lilly Mannhal
+
+### 📚 Documentation
+
+- update readme- ([dd2fbdc](https://gitlab.com/Lanastara/starship-jj/-/commit/dd2fbdc2a7449029bbbed175df3ca881bd0da70b)) - Lilly Mannhal
+## [0.1.0] - 2025-02-26
 
 ### 🚀 Features
 
@@ -18,9 +27,14 @@ All notable changes to this project will be documented in this file. See [conven
 ### 🐛 Bug Fixes
 
 - color printing- ([ac69fe3](https://gitlab.com/Lanastara/starship-jj/-/commit/ac69fe3d9909933cb722a8c043182f7eb9bb78aa)) - Lilly Mannhal
+- only 5 tags are allowed- ([df5517e](https://gitlab.com/Lanastara/starship-jj/-/commit/df5517e82eefb5ae263f8dd06afc847b24b87c2b)) - Lilly Mannhal
 
 ### 📚 Documentation
 
 - create json schema for config- ([f074121](https://gitlab.com/Lanastara/starship-jj/-/commit/f074121900b447eea302fc5f4119d4d00fb3ee3d)) - Lilly Mannhal
 - added sample config- ([eb64656](https://gitlab.com/Lanastara/starship-jj/-/commit/eb64656dffc5f134fdfbc20f42579a8f29f802d8)) - Lilly Mannhal
+
+### ⚙️ Miscellaneous Tasks
+
+- fix Cargo.toml for publishing- ([5be560c](https://gitlab.com/Lanastara/starship-jj/-/commit/5be560cbc190aba58c7a358e3290324e06c4ea79)) - Lilly Mannhal
 
