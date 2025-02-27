@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
-## [unreleased]
+## [0.2.0](https://gitlab.com/Lanastara/starship-jj/-/compare/v0.1.0..v0.2.0) - 2025-02-27
 
 ### 🚀 Features
 
