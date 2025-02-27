@@ -17,7 +17,7 @@ starship plugin for jj
 - [x] customize settings via config file.
 - [x] print a default config file.
 - [x] print the path to the default config file path.
-- [ ] set custom config location via command line or environment args.
+- [x] set custom config location via command line or environment args.
 
 ## Installation
 
@@ -49,7 +49,7 @@ when = "jj root --ignore-working-copy"
 
 2. Configure what you want to see
 
-starship-jj will load a configuration toml file either from the location provided via the --starship-config argument (not implemented yet) or from you OSs default config dir (Linus: "$XDG_CONFIG_DIR/starship-jj/starship-jj.toml" Windows: "%APPDATA%/starship-jj/starship-jj.toml").
+starship-jj will load a configuration toml file either from the location provided via the --starship-config argument or from you OSs default config dir (Linus: "$XDG_CONFIG_DIR/starship-jj/starship-jj.toml" Windows: "%APPDATA%/starship-jj/starship-jj.toml").
 
 If no config file exist starship-jj will use some sane default values.
 

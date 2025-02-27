@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [unreleased]
+
+### 🚀 Features
+
+- use --starship-config argument- ([4145e01](https://gitlab.com/Lanastara/starship-jj/-/commit/4145e014505c046b25672bf48fb1718d00047a2d)) - Lilly Mannhal
+
+### 📚 Documentation
+
+- update readme- ([dd2fbdc](https://gitlab.com/Lanastara/starship-jj/-/commit/dd2fbdc2a7449029bbbed175df3ca881bd0da70b)) - Lilly Mannhal
 ## [0.1.0] - 2025-02-26
 
 ### 🚀 Features
