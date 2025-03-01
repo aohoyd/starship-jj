@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, io::Write, path::PathBuf, process::ExitCode, sy
 use args::{ConfigCommands, CustomCommand, StarshipCommands};
 use config::BookmarkConfig;
 use jj_cli::{
-    cli_util::{CliRunner, CommandHelper},
+    cli_util::{CliRunner, CommandHelper, RevisionArg},
     command_error::{user_error, user_error_with_message, CommandError},
     diff_util::{get_copy_records, DiffStatOptions, DiffStats},
     ui::Ui,
@@ -75,6 +75,8 @@ struct CommitWarnings {
     hidden: bool,
     conflict: bool,
     divergent: bool,
+    immutable: bool,
+    empty: bool,
 }
 
 #[derive(Default)]
@@ -111,10 +113,14 @@ fn print_prompt(
     let store = repo.store();
     let mut data = JJData::default();
 
+    let revs =
+        workspace_helper.parse_revset(ui, &RevisionArg::from("immutable_heads()".to_string()))?;
+
+    let mut immutable = revs.evaluate_to_commit_ids()?;
+
     let Some(commit_id) = workspace_helper.get_wc_commit_id() else {
         return Ok(());
     };
-
     let commit = store.get_commit(commit_id)?;
 
     let matcher = workspace_helper.parse_file_patterns(ui, &[])?.to_matcher();
@@ -144,6 +150,10 @@ fn print_prompt(
 
     data.commit.desc = commit.description().to_string();
     data.commit.warnings.conflict = commit.has_conflict()?;
+    data.commit.warnings.empty = tree == parent_tree;
+    data.commit.warnings.immutable = immutable
+        .find(|id| id.as_ref().is_ok_and(|id| id == commit_id))
+        .is_some();
 
     match change {
         Some(commits) => match commits.len() {

@@ -17,7 +17,11 @@ pub struct State {
     conflict: Status,
     /// Controls how the divergence warning will be rendered.
     divergent: Status,
-    /// Controls how the hidden warning will be rendered.
+    /// Controls how the divergence warning will be rendered.
+    empty: Status,
+    /// Controls how the empty warning will be rendered.
+    immutable: Status,
+    /// Controls how the immutable warning will be rendered.
     hidden: Status,
 }
 
@@ -55,6 +59,20 @@ impl Default for State {
                     ..Default::default()
                 },
             },
+            empty: Status {
+                text: "(EMPTY)".to_string(),
+                style: Style {
+                    color: Some(super::util::Color::Yellow),
+                    ..Default::default()
+                },
+            },
+            immutable: Status {
+                text: "(IMMUTABLE)".to_string(),
+                style: Style {
+                    color: Some(super::util::Color::Yellow),
+                    ..Default::default()
+                },
+            },
         }
     }
 }
@@ -87,6 +105,22 @@ impl State {
             first = false;
             self.hidden.style.print(io)?;
             write!(io, "{}", self.hidden.text)?;
+        }
+        if data.commit.warnings.immutable {
+            if !first {
+                write!(io, "{}", self.separator)?;
+            }
+            first = false;
+            self.immutable.style.print(io)?;
+            write!(io, "{}", self.immutable.text)?;
+        }
+        if data.commit.warnings.empty {
+            if !first {
+                write!(io, "{}", self.separator)?;
+            }
+            first = false;
+            self.empty.style.print(io)?;
+            write!(io, "{}", self.empty.text)?;
         }
         if !first {
             write!(io, "{module_separator}")?;
