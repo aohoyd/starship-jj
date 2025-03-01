@@ -108,7 +108,11 @@ fn print_prompt(
         }
     };
 
-    let workspace_helper = command_helper.workspace_helper(ui)?;
+    let workspace_helper = if command_helper.global_args().ignore_working_copy {
+        command_helper.workspace_helper_no_snapshot(ui)?
+    } else {
+        command_helper.workspace_helper(ui)?
+    };
     let repo = workspace_helper.repo();
     let store = repo.store();
     let mut data = JJData::default();
@@ -124,6 +128,7 @@ fn print_prompt(
     let commit = store.get_commit(commit_id)?;
 
     let matcher = workspace_helper.parse_file_patterns(ui, &[])?.to_matcher();
+
     let change_id = commit.change_id();
     let change = repo.resolve_change_id(change_id);
     let mut copy_records = CopyRecords::default();
