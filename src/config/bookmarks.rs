@@ -3,7 +3,8 @@ use std::{
     io::Write,
 };
 
-use jj_cli::command_error::CommandError;
+use jj_cli::{command_error::CommandError, ui::Ui};
+use jj_lib::repo::Repo;
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -49,19 +50,23 @@ impl Bookmarks {
         data: &crate::JJData,
         module_separator: &str,
     ) -> Result<(), CommandError> {
+        let Some(bookmarks) = data.bookmarks.as_ref() else {
+            unreachable!()
+        };
+
         self.style.print(io)?;
 
-        let mut ordered: BTreeMap<usize, BTreeSet<&str>> = BTreeMap::new();
+        let mut ordered: BTreeMap<usize, BTreeSet<&String>> = BTreeMap::new();
 
-        for (name, behind) in &data.bookmarks {
+        for (name, behind) in bookmarks {
             ordered
                 .entry(*behind)
                 .and_modify(|s| {
-                    s.insert(*name);
+                    s.insert(name);
                 })
                 .or_insert_with(|| {
                     let mut s = BTreeSet::new();
-                    s.insert(*name);
+                    s.insert(name);
                     s
                 });
         }
@@ -101,6 +106,32 @@ impl Bookmarks {
             write!(io, "{module_separator}")?;
         }
 
+        Ok(())
+    }
+
+    pub(crate) fn parse(
+        &self,
+        ui: &mut Ui,
+        command_helper: &jj_cli::cli_util::CommandHelper,
+        state: &mut crate::State,
+        data: &mut crate::JJData,
+        global: &super::GlobalConfig,
+    ) -> Result<(), CommandError> {
+        if data.bookmarks.is_some() {
+            return Ok(());
+        }
+        let mut bookmarks = BTreeMap::new();
+
+        let repo = state.repo(command_helper, ui)?;
+        let view = repo.view();
+        let store = repo.store();
+        let Some(commit_id) = state.commit_id(command_helper, ui)? else {
+            return Ok(());
+        };
+
+        crate::find_parent_bookmarks(commit_id, 0, &global.bookmarks, &mut bookmarks, view, store)?;
+
+        data.bookmarks = Some(bookmarks);
         Ok(())
     }
 }

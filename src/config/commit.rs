@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use jj_cli::command_error::CommandError;
+use jj_cli::{command_error::CommandError, ui::Ui};
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -34,12 +34,14 @@ impl Commit {
         data: &crate::JJData,
         module_separator: &str,
     ) -> Result<(), CommandError> {
-        let first_line = data
-            .commit
-            .desc
+        let Some(desc) = data.commit.desc.as_ref() else {
+            return Ok(());
+        };
+
+        let first_line = desc
             .split_once(['\r', '\n'])
             .map(|(line, _rest)| line)
-            .unwrap_or(&data.commit.desc);
+            .unwrap_or(&desc);
 
         if !first_line.is_empty() {
             self.style.print(io)?;
@@ -53,6 +55,23 @@ impl Commit {
                 }
             }
         }
+        Ok(())
+    }
+    pub(crate) fn parse(
+        &self,
+        ui: &mut Ui,
+        command_helper: &jj_cli::cli_util::CommandHelper,
+        state: &mut crate::State,
+        data: &mut crate::JJData,
+        _global: &super::GlobalConfig,
+    ) -> Result<(), CommandError> {
+        if data.commit.desc.is_some() {
+            return Ok(());
+        }
+        let Some(commit) = state.commit(command_helper, ui)? else {
+            return Ok(());
+        };
+        data.commit.desc = Some(commit.description().to_string());
         Ok(())
     }
 }
