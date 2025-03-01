@@ -2,8 +2,8 @@
 name = "starship-jj"
 version = "0.2.0"
 description = "starship plugin for jj"
-resolver = "2"
-edition = "2021"
+resolver = "3"
+edition = "2024"
 authors = ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
 license = "MIT"
 readme = "README.md"
