@@ -23,6 +23,8 @@ pub struct Bookmarks {
     behind_symbol: Option<char>,
     /// Maximum amout of bookmarks that will be rendered.
     max_bookmarks: Option<usize>,
+    /// Maximum length the bookmark name will be truncated to.
+    max_length: Option<usize>,
 }
 
 impl Default for Bookmarks {
@@ -35,6 +37,7 @@ impl Default for Bookmarks {
             behind_symbol: Some('⇡'),
             max_bookmarks: None,
             separator: " ".to_string(),
+            max_length: None,
         }
     }
 }
@@ -77,7 +80,14 @@ impl Bookmarks {
                 if counter > 0 {
                     write!(io, "{}", self.separator)?;
                 }
-                write!(io, "{}", name)?;
+                match self.max_length {
+                    Some(max_len) if name.len() > max_len => {
+                        write!(io, "\"{}…\"", &name[..max_len - 1])?;
+                    }
+                    _ => {
+                        write!(io, "\"{}\"", name)?;
+                    }
+                }
                 if behind != 0 {
                     match self.behind_symbol {
                         Some(s) => write!(io, "{s}{}", behind)?,
