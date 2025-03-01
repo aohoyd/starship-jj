@@ -228,7 +228,14 @@ fn find_parent_bookmarks<'a>(
 }
 
 fn main() -> ExitCode {
+    let start = std::time::Instant::now();
+    let print_timing = std::env::var("STARSHIP_JJ_CONFIG_TIMING").is_ok();
     let clirunner = CliRunner::init();
     let clirunner = clirunner.add_subcommand(starship);
-    clirunner.run()
+    let e = clirunner.run();
+    let elapsed = start.elapsed();
+    if print_timing {
+        print!("{elapsed:?} ");
+    }
+    e
 }
