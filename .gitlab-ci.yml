@@ -79,6 +79,20 @@ test:junit-report:
 #         coverage_format: cobertura
 #         path: cobertura.xml
 
+audit:audit:
+  needs: []
+  cache:
+    <<: *global_cache
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - *global_before
+    - cargo install --locked cargo-deny
+  script:
+    - rustc --version && cargo --version
+    - cargo deny --version
+    - cargo deny check
+
 audit:fmt:
   needs: []
   cache:
