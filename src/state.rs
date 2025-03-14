@@ -40,35 +40,31 @@ impl State {
         Ok(w)
     }
 
-    pub fn load_repo(&mut self, command_helper: &CommandHelper, ui: &mut Ui) -> Result<()> {
+    pub fn load_repo(&mut self, command_helper: &CommandHelper) -> Result<()> {
         if self.repo.is_some() {
             return Ok(());
         }
         let repo_loader = self.workspace(command_helper)?.repo_loader();
-        let op_head = command_helper.resolve_operation(ui, repo_loader)?;
+        let op_head = command_helper.resolve_operation(&Ui::null(), repo_loader)?;
         let repo = repo_loader.load_at(&op_head)?;
         self.repo = Some(repo);
         Ok(())
     }
 
-    pub fn repo(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<Arc<ReadonlyRepo>> {
-        self.load_repo(command_helper, ui)?;
+    pub fn repo(&mut self, command_helper: &CommandHelper) -> Result<Arc<ReadonlyRepo>> {
+        self.load_repo(command_helper)?;
         let Some(repo) = &self.repo else {
             unreachable!();
         };
         Ok(repo.clone())
     }
 
-    pub fn load_commit_id(&mut self, command_helper: &CommandHelper, ui: &mut Ui) -> Result<()> {
+    pub fn load_commit_id(&mut self, command_helper: &CommandHelper) -> Result<()> {
         if self.commit_id.is_some() {
             return Ok(());
         }
         let commit_id = self
-            .repo(command_helper, ui)?
+            .repo(command_helper)?
             .view()
             .get_wc_commit_id(self.workspace(command_helper)?.workspace_id())
             .cloned();
@@ -77,26 +73,22 @@ impl State {
         Ok(())
     }
 
-    pub fn commit_id(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<&Option<CommitId>> {
-        self.load_commit_id(command_helper, ui)?;
+    pub fn commit_id(&mut self, command_helper: &CommandHelper) -> Result<&Option<CommitId>> {
+        self.load_commit_id(command_helper)?;
         let Some(w) = self.commit_id.as_ref() else {
             unreachable!()
         };
         Ok(w)
     }
 
-    pub fn load_commit(&mut self, command_helper: &CommandHelper, ui: &mut Ui) -> Result<()> {
+    pub fn load_commit(&mut self, command_helper: &CommandHelper) -> Result<()> {
         if self.commit.is_some() {
             return Ok(());
         }
-        let repo = self.repo(command_helper, ui)?;
+        let repo = self.repo(command_helper)?;
         let store = repo.store();
         let commit = self
-            .commit_id(command_helper, ui)?
+            .commit_id(command_helper)?
             .as_ref()
             .map(|id| store.get_commit(id))
             .transpose()?;
@@ -104,24 +96,20 @@ impl State {
         self.commit = Some(commit);
         Ok(())
     }
-    pub fn commit(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<&Option<Commit>> {
-        self.load_commit(command_helper, ui)?;
+    pub fn commit(&mut self, command_helper: &CommandHelper) -> Result<&Option<Commit>> {
+        self.load_commit(command_helper)?;
         let Some(w) = self.commit.as_ref() else {
             unreachable!()
         };
         Ok(w)
     }
 
-    pub fn load_parent_tree(&mut self, command_helper: &CommandHelper, ui: &mut Ui) -> Result<()> {
+    pub fn load_parent_tree(&mut self, command_helper: &CommandHelper) -> Result<()> {
         if self.parent_tree.is_some() {
             return Ok(());
         }
-        let repo = self.repo(command_helper, ui)?;
-        let commit = self.commit(command_helper, ui)?;
+        let repo = self.repo(command_helper)?;
+        let commit = self.commit(command_helper)?;
         let parent_tree = commit
             .as_ref()
             .map(|c| c.parent_tree(repo.as_ref()))
@@ -129,49 +117,37 @@ impl State {
         self.parent_tree = Some(parent_tree);
         Ok(())
     }
-    pub fn parent_tree(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<&Option<MergedTree>> {
-        self.load_parent_tree(command_helper, ui)?;
+    pub fn parent_tree(&mut self, command_helper: &CommandHelper) -> Result<&Option<MergedTree>> {
+        self.load_parent_tree(command_helper)?;
         let Some(w) = self.parent_tree.as_ref() else {
             unreachable!()
         };
         Ok(w)
     }
 
-    pub fn load_tree(&mut self, command_helper: &CommandHelper, ui: &mut Ui) -> Result<()> {
+    pub fn load_tree(&mut self, command_helper: &CommandHelper) -> Result<()> {
         if self.tree.is_some() {
             return Ok(());
         }
-        let commit = self.commit(command_helper, ui)?;
+        let commit = self.commit(command_helper)?;
         let tree = commit.as_ref().map(|c| c.tree()).transpose()?;
         self.tree = Some(tree);
         Ok(())
     }
 
-    pub fn tree(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<&Option<MergedTree>> {
-        self.load_tree(command_helper, ui)?;
+    pub fn tree(&mut self, command_helper: &CommandHelper) -> Result<&Option<MergedTree>> {
+        self.load_tree(command_helper)?;
         let Some(w) = self.tree.as_ref() else {
             unreachable!()
         };
         Ok(w)
     }
 
-    pub fn diff_stats(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<Option<DiffStats>> {
-        self.load_parent_tree(command_helper, ui)?;
-        self.load_tree(command_helper, ui)?;
+    pub fn diff_stats(&mut self, command_helper: &CommandHelper) -> Result<Option<DiffStats>> {
+        self.load_parent_tree(command_helper)?;
+        self.load_tree(command_helper)?;
 
-        let repo = self.repo(command_helper, ui)?;
+        let repo = self.repo(command_helper)?;
 
         let Some(Some(commit)) = self.commit.as_ref() else {
             return Ok(None);
@@ -203,13 +179,9 @@ impl State {
         Ok(Some(stats))
     }
 
-    pub fn commit_is_empty(
-        &mut self,
-        command_helper: &CommandHelper,
-        ui: &mut Ui,
-    ) -> Result<Option<bool>> {
-        let _ = self.parent_tree(command_helper, ui)?;
-        let _ = self.tree(command_helper, ui)?;
+    pub fn commit_is_empty(&mut self, command_helper: &CommandHelper) -> Result<Option<bool>> {
+        self.load_parent_tree(command_helper)?;
+        self.load_tree(command_helper)?;
 
         let Some(Some(tree)) = self.tree.as_ref() else {
             return Ok(None);

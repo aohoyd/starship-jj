@@ -1,8 +1,12 @@
-use std::io::Write;
+use std::{
+    io::Write,
+    sync::{Arc, atomic::AtomicBool},
+    time::Duration,
+};
 
 use bookmarks::Bookmarks;
 use commit::Commit;
-use jj_cli::{command_error::CommandError, ui::Ui};
+use jj_cli::command_error::CommandError;
 use metrics::Metrics;
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
@@ -32,6 +36,9 @@ pub struct Config {
 pub struct GlobalConfig {
     /// Text that will be printed between each Module.
     module_separator: String,
+    /// Timeout after wich the process is teminated.
+    #[serde(default)]
+    timeout: Option<u64>,
     /// Controls the behaviour of the bookmark finding algorythm.
     #[serde(default)]
     pub bookmarks: BookmarkConfig,
@@ -51,50 +58,52 @@ pub struct BookmarkConfig {
 }
 
 impl Config {
-    pub fn print(&self, io: &mut impl Write, data: &crate::JJData) -> Result<(), CommandError> {
-        for module in self.modules.iter() {
-            match module {
-                ModuleConfig::Bookmarks(bookmarks) => {
-                    bookmarks.print(io, data, &self.global.module_separator)?;
-                }
-                ModuleConfig::Commit(commit_desc) => {
-                    commit_desc.print(io, data, &self.global.module_separator)?
-                }
-                ModuleConfig::State(commit_warnings) => {
-                    commit_warnings.print(io, data, &self.global.module_separator)?
-                }
-                ModuleConfig::Metrics(commit_diff) => {
-                    commit_diff.print(io, data, &self.global.module_separator)?
-                }
-            }
-        }
-        util::Style::default().print(io)?;
-        Ok(())
-    }
-
-    pub(crate) fn parse(
+    pub fn print(
         &self,
-        ui: &mut Ui,
         command_helper: &&jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
     ) -> Result<(), CommandError> {
+        let done = Arc::new(AtomicBool::new(false));
+
+        let done2 = done.clone();
+        if let Some(timeout) = self.global.timeout {
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_millis(timeout));
+                if !done2.load(std::sync::atomic::Ordering::Relaxed) {
+                    _ = util::Style::default().print(&mut std::io::stdout());
+                    print!(" ");
+                    let _ = std::io::stdout().flush();
+                    std::process::exit(0);
+                }
+            });
+        }
+        let mut io = std::io::stdout();
         for module in self.modules.iter() {
             match module {
                 ModuleConfig::Bookmarks(bookmarks) => {
-                    bookmarks.parse(ui, command_helper, state, data, &self.global)?;
+                    bookmarks.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    bookmarks.print(&mut io, data, &self.global.module_separator)?;
                 }
                 ModuleConfig::Commit(commit_desc) => {
-                    commit_desc.parse(ui, command_helper, state, data, &self.global)?;
+                    commit_desc.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    commit_desc.print(&mut io, data, &self.global.module_separator)?
                 }
                 ModuleConfig::State(commit_warnings) => {
-                    commit_warnings.parse(ui, command_helper, state, data, &self.global)?;
+                    commit_warnings.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    commit_warnings.print(&mut io, data, &self.global.module_separator)?
                 }
                 ModuleConfig::Metrics(commit_diff) => {
-                    commit_diff.parse(ui, command_helper, state, data, &self.global)?;
+                    commit_diff.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    commit_diff.print(&mut io, data, &self.global.module_separator)?
                 }
             }
         }
+        util::Style::default().print(&mut io)?;
         Ok(())
     }
 }
@@ -114,6 +123,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             global: GlobalConfig {
+                timeout: None,
                 module_separator: " ".to_string(),
                 bookmarks: Default::default(),
             },

@@ -30,7 +30,7 @@ fn starship(
     let CustomCommand::Starship(args) = command;
     match args.command {
         StarshipCommands::Prompt { starship_config } => {
-            print_prompt(ui, command_helper, &starship_config)?
+            print_prompt(command_helper, &starship_config)?
         }
         StarshipCommands::Config(ConfigCommands::Path) => {
             let config_dir = get_config_path()?;
@@ -90,7 +90,6 @@ struct CommitDiff {
 }
 
 fn print_prompt(
-    ui: &mut Ui,
     command_helper: &CommandHelper,
     config_path: &Option<PathBuf>,
 ) -> Result<(), CommandError> {
@@ -112,10 +111,7 @@ fn print_prompt(
     let mut state = State::default();
     let mut data = JJData::default();
 
-    config.parse(ui, &command_helper, &mut state, &mut data)?;
-    let mut io = ui.stdout();
-
-    config.print(&mut io, &data)?;
+    config.print(&command_helper, &mut state, &mut data)?;
 
     Ok(())
 }

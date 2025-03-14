@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use jj_cli::{command_error::CommandError, ui::Ui};
+use jj_cli::command_error::CommandError;
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -59,7 +59,6 @@ impl Commit {
     }
     pub(crate) fn parse(
         &self,
-        ui: &mut Ui,
         command_helper: &jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
@@ -68,7 +67,7 @@ impl Commit {
         if data.commit.desc.is_some() {
             return Ok(());
         }
-        let Some(commit) = state.commit(command_helper, ui)? else {
+        let Some(commit) = state.commit(command_helper)? else {
             return Ok(());
         };
         data.commit.desc = Some(commit.description().to_string());

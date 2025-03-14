@@ -3,7 +3,7 @@ use std::{
     io::Write,
 };
 
-use jj_cli::{command_error::CommandError, ui::Ui};
+use jj_cli::command_error::CommandError;
 use jj_lib::repo::Repo;
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
@@ -111,7 +111,6 @@ impl Bookmarks {
 
     pub(crate) fn parse(
         &self,
-        ui: &mut Ui,
         command_helper: &jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
@@ -122,10 +121,10 @@ impl Bookmarks {
         }
         let mut bookmarks = BTreeMap::new();
 
-        let repo = state.repo(command_helper, ui)?;
+        let repo = state.repo(command_helper)?;
         let view = repo.view();
         let store = repo.store();
-        let Some(commit_id) = state.commit_id(command_helper, ui)? else {
+        let Some(commit_id) = state.commit_id(command_helper)? else {
             return Ok(());
         };
 

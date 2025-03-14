@@ -144,31 +144,32 @@ impl State {
     }
     pub fn parse(
         &self,
-        ui: &mut Ui,
         command_helper: &jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
         global: &super::GlobalConfig,
     ) -> Result<(), CommandError> {
-        let workspace_helper = command_helper.workspace_helper(ui)?;
+        let workspace_helper = command_helper.workspace_helper(&Ui::null())?;
 
         if !self.empty.disabled && data.commit.warnings.empty.is_none() {
-            data.commit.warnings.empty = state.commit_is_empty(command_helper, ui)?;
+            data.commit.warnings.empty = state.commit_is_empty(command_helper)?;
         }
         if !self.conflict.disabled && data.commit.warnings.conflict.is_none() {
             data.commit.warnings.conflict = state
-                .commit(command_helper, ui)?
+                .commit(command_helper)?
                 .as_ref()
                 .map(|c| c.has_conflict())
                 .transpose()?;
         }
 
-        self.parse_hidden_and_divergent(ui, command_helper, state, data, global)?;
+        self.parse_hidden_and_divergent(command_helper, state, data, global)?;
 
         if !self.immutable.disabled && data.commit.warnings.immutable.is_none() {
-            if let Some(commit_id) = state.commit_id(command_helper, ui)? {
-                let revs = workspace_helper
-                    .parse_revset(ui, &RevisionArg::from("immutable_heads()".to_string()))?;
+            if let Some(commit_id) = state.commit_id(command_helper)? {
+                let revs = workspace_helper.parse_revset(
+                    &Ui::null(),
+                    &RevisionArg::from("immutable_heads()".to_string()),
+                )?;
 
                 let mut immutable = revs.evaluate_to_commit_ids()?;
 
@@ -184,7 +185,6 @@ impl State {
     }
     pub fn parse_hidden_and_divergent(
         &self,
-        ui: &mut Ui,
         command_helper: &jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
@@ -193,8 +193,8 @@ impl State {
         if (!self.hidden.disabled && data.commit.warnings.hidden.is_none())
             || (!self.divergent.disabled && data.commit.warnings.divergent.is_none())
         {
-            let repo = state.repo(command_helper, ui)?;
-            let Some(commit) = state.commit(command_helper, ui)? else {
+            let repo = state.repo(command_helper)?;
+            let Some(commit) = state.commit(command_helper)? else {
                 return Ok(());
             };
             let change_id = commit.change_id();

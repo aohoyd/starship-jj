@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use jj_cli::{command_error::CommandError, ui::Ui};
+use jj_cli::command_error::CommandError;
 #[cfg(feature = "json-schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -135,7 +135,6 @@ impl Metrics {
     }
     pub(crate) fn parse(
         &self,
-        ui: &mut Ui,
         command_helper: &jj_cli::cli_util::CommandHelper,
         state: &mut crate::State,
         data: &mut crate::JJData,
@@ -147,7 +146,7 @@ impl Metrics {
 
         let mut diff = crate::CommitDiff::default();
 
-        let Some(stats) = state.diff_stats(command_helper, ui)? else {
+        let Some(stats) = state.diff_stats(command_helper)? else {
             return Ok(());
         };
 
