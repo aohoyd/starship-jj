@@ -16,11 +16,13 @@ use super::util::{Color, Style};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Bookmarks {
     /// Text that will be rendered between each bookmark.
+    #[serde(default = "default_separator")]
     separator: String,
     /// Controls how bookmarks are rendered.
-    #[serde(flatten)]
+    #[serde(flatten, default = "default_style")]
     style: Style,
     /// A suffix that will be printed when the given bookmark is behing the working copy.
+    #[serde(default = "default_behind_symbol")]
     behind_symbol: Option<char>,
     /// Maximum amout of bookmarks that will be rendered.
     max_bookmarks: Option<usize>,
@@ -28,17 +30,29 @@ pub struct Bookmarks {
     max_length: Option<usize>,
 }
 
+fn default_style() -> Style {
+    Style {
+        color: Some(Color::Magenta),
+        ..Default::default()
+    }
+}
+
+fn default_behind_symbol() -> Option<char> {
+    Some('⇡')
+}
+
+fn default_separator() -> String {
+    " ".to_string()
+}
+
 impl Default for Bookmarks {
     fn default() -> Self {
         Self {
-            style: Style {
-                color: Some(Color::Magenta),
-                ..Default::default()
-            },
-            behind_symbol: Some('⇡'),
-            max_bookmarks: None,
-            separator: " ".to_string(),
-            max_length: None,
+            style: default_style(),
+            behind_symbol: default_behind_symbol(),
+            max_bookmarks: Default::default(),
+            separator: default_separator(),
+            max_length: Default::default(),
         }
     }
 }

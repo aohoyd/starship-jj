@@ -12,17 +12,22 @@ use super::util::Style;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Commit {
     /// Maximum length the commit text will be truncated to.
+    #[serde(default = "default_max_length")]
     max_length: Option<usize>,
     /// Controls how the commit text is rendered.
     #[serde(flatten)]
     style: Style,
 }
 
+fn default_max_length() -> Option<usize> {
+    Some(24)
+}
+
 impl Default for Commit {
     fn default() -> Self {
         Self {
             style: Default::default(),
-            max_length: Some(24),
+            max_length: default_max_length(),
         }
     }
 }

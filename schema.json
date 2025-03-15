@@ -2,10 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Config",
   "type": "object",
-  "required": [
-    "module",
-    "module_separator"
-  ],
   "properties": {
     "bookmarks": {
       "description": "Controls the behaviour of the bookmark finding algorythm.",
@@ -21,6 +17,81 @@
     },
     "module": {
       "description": "Modules that will be rendered.",
+      "default": [
+        {
+          "behind_symbol": "⇡",
+          "bg_color": null,
+          "color": "Magenta",
+          "max_bookmarks": null,
+          "max_length": null,
+          "separator": " ",
+          "type": "Bookmarks"
+        },
+        {
+          "bg_color": null,
+          "color": null,
+          "max_length": 24,
+          "type": "Commit"
+        },
+        {
+          "conflict": {
+            "bg_color": null,
+            "color": "Red",
+            "disabled": false,
+            "text": "(CONFLICT)"
+          },
+          "divergent": {
+            "bg_color": null,
+            "color": "Cyan",
+            "disabled": false,
+            "text": "(DIVERGENT)"
+          },
+          "empty": {
+            "bg_color": null,
+            "color": "Yellow",
+            "disabled": false,
+            "text": "(EMPTY)"
+          },
+          "hidden": {
+            "bg_color": null,
+            "color": "Yellow",
+            "disabled": false,
+            "text": "(HIDDEN)"
+          },
+          "immutable": {
+            "bg_color": null,
+            "color": "Yellow",
+            "disabled": false,
+            "text": "(IMMUTABLE)"
+          },
+          "separator": " ",
+          "type": "State"
+        },
+        {
+          "added_lines": {
+            "bg_color": null,
+            "color": "Green",
+            "prefix": "+",
+            "suffix": ""
+          },
+          "bg_color": null,
+          "changed_files": {
+            "bg_color": null,
+            "color": "Cyan",
+            "prefix": "",
+            "suffix": ""
+          },
+          "color": "Magenta",
+          "removed_lines": {
+            "bg_color": null,
+            "color": "Red",
+            "prefix": "-",
+            "suffix": ""
+          },
+          "template": "[{changed} {added}{removed}]",
+          "type": "Metrics"
+        }
+      ],
       "type": "array",
       "items": {
         "$ref": "#/definitions/ModuleConfig"
@@ -28,7 +99,18 @@
     },
     "module_separator": {
       "description": "Text that will be printed between each Module.",
+      "default": " ",
       "type": "string"
+    },
+    "timeout": {
+      "description": "Timeout after wich the process is teminated.",
+      "default": null,
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint64",
+      "minimum": 0.0
     }
   },
   "definitions": {
@@ -155,12 +237,12 @@
           "description": "Prints information about bookmarks in the working copies ancestors.",
           "type": "object",
           "required": [
-            "separator",
             "type"
           ],
           "properties": {
             "behind_symbol": {
               "description": "A suffix that will be printed when the given bookmark is behing the working copy.",
+              "default": "⇡",
               "type": [
                 "string",
                 "null"
@@ -199,8 +281,18 @@
               "format": "uint",
               "minimum": 0.0
             },
+            "max_length": {
+              "description": "Maximum length the bookmark name will be truncated to.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint",
+              "minimum": 0.0
+            },
             "separator": {
               "description": "Text that will be rendered between each bookmark.",
+              "default": " ",
               "type": "string"
             },
             "type": {
@@ -242,6 +334,7 @@
             },
             "max_length": {
               "description": "Maximum length the commit text will be truncated to.",
+              "default": 24,
               "type": [
                 "integer",
                 "null"
@@ -261,15 +354,17 @@
           "description": "Prints a warning if the working copy contains any conflicts, is divergent or hidden",
           "type": "object",
           "required": [
-            "conflict",
-            "divergent",
-            "hidden",
-            "separator",
             "type"
           ],
           "properties": {
             "conflict": {
               "description": "Controls how the conflict warning will be rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Red",
+                "disabled": false,
+                "text": "(CONFLICT)"
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Status"
@@ -278,6 +373,26 @@
             },
             "divergent": {
               "description": "Controls how the divergence warning will be rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Cyan",
+                "disabled": false,
+                "text": "(DIVERGENT)"
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Status"
+                }
+              ]
+            },
+            "empty": {
+              "description": "Controls how the divergence warning will be rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Yellow",
+                "disabled": false,
+                "text": "(EMPTY)"
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Status"
@@ -285,7 +400,27 @@
               ]
             },
             "hidden": {
-              "description": "Controls how the hidden warning will be rendered.",
+              "description": "Controls how the immutable warning will be rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Yellow",
+                "disabled": false,
+                "text": "(HIDDEN)"
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Status"
+                }
+              ]
+            },
+            "immutable": {
+              "description": "Controls how the empty warning will be rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Yellow",
+                "disabled": false,
+                "text": "(IMMUTABLE)"
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Status"
@@ -294,6 +429,7 @@
             },
             "separator": {
               "description": "Text that will be printed between each Warning.",
+              "default": " ",
               "type": "string"
             },
             "type": {
@@ -308,15 +444,17 @@
           "description": "Prints the amount of changes in the working copy",
           "type": "object",
           "required": [
-            "added_lines",
-            "changed_files",
-            "removed_lines",
-            "template",
             "type"
           ],
           "properties": {
             "added_lines": {
               "description": "Controlls how the number of added lines is rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Green",
+                "prefix": "+",
+                "suffix": ""
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Metric"
@@ -336,6 +474,12 @@
             },
             "changed_files": {
               "description": "Controlls how the number of changed files is rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Cyan",
+                "prefix": "",
+                "suffix": ""
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Metric"
@@ -355,6 +499,12 @@
             },
             "removed_lines": {
               "description": "Controlls how the number of removed lines is rendered.",
+              "default": {
+                "bg_color": null,
+                "color": "Red",
+                "prefix": "-",
+                "suffix": ""
+              },
               "allOf": [
                 {
                   "$ref": "#/definitions/Metric"
@@ -363,6 +513,7 @@
             },
             "template": {
               "description": "Controls how the changes are rendered, use {added}, {removed} and {changed} to render the number of changes.",
+              "default": "[{changed} {added}{removed}]",
               "type": "string"
             },
             "type": {
@@ -402,6 +553,11 @@
               "type": "null"
             }
           ]
+        },
+        "disabled": {
+          "description": "Do not render this warning",
+          "default": false,
+          "type": "boolean"
         },
         "text": {
           "description": "The text that should be printed when the working copy has the given state.",

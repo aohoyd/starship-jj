@@ -27,7 +27,7 @@ pub struct Config {
     #[serde(flatten, default)]
     global: GlobalConfig,
     /// Modules that will be rendered.
-    #[serde(rename = "module", default)]
+    #[serde(rename = "module", default = "default_modules")]
     modules: Vec<ModuleConfig>,
 }
 
@@ -35,6 +35,7 @@ pub struct Config {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GlobalConfig {
     /// Text that will be printed between each Module.
+    #[serde(default = "default_separator")]
     module_separator: String,
     /// Timeout after wich the process is teminated.
     #[serde(default)]
@@ -42,6 +43,19 @@ pub struct GlobalConfig {
     /// Controls the behaviour of the bookmark finding algorythm.
     #[serde(default)]
     pub bookmarks: BookmarkConfig,
+}
+
+fn default_separator() -> String {
+    " ".to_string()
+}
+
+fn default_modules() -> Vec<ModuleConfig> {
+    vec![
+        ModuleConfig::Bookmarks(Default::default()),
+        ModuleConfig::Commit(Default::default()),
+        ModuleConfig::State(Default::default()),
+        ModuleConfig::Metrics(Default::default()),
+    ]
 }
 
 #[cfg_attr(feature = "json-schema", derive(JsonSchema))]
@@ -123,16 +137,11 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             global: GlobalConfig {
-                timeout: None,
-                module_separator: " ".to_string(),
+                timeout: Default::default(),
+                module_separator: default_separator(),
                 bookmarks: Default::default(),
             },
-            modules: vec![
-                ModuleConfig::Bookmarks(Default::default()),
-                ModuleConfig::Commit(Default::default()),
-                ModuleConfig::State(Default::default()),
-                ModuleConfig::Metrics(Default::default()),
-            ],
+            modules: default_modules(),
         }
     }
 }
