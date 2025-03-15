@@ -13,23 +13,82 @@ use super::util::Style;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct State {
     /// Text that will be printed between each Warning.
-    #[serde(default)]
+    #[serde(default = "default_separator")]
     separator: String,
     /// Controls how the conflict warning will be rendered.
-    #[serde(default)]
+    #[serde(default = "default_conflict")]
     conflict: Status,
     /// Controls how the divergence warning will be rendered.
-    #[serde(default)]
+    #[serde(default = "default_divergent")]
     divergent: Status,
     /// Controls how the divergence warning will be rendered.
-    #[serde(default)]
+    #[serde(default = "default_empty")]
     empty: Status,
     /// Controls how the empty warning will be rendered.
-    #[serde(default)]
+    #[serde(default = "default_immutable")]
     immutable: Status,
     /// Controls how the immutable warning will be rendered.
-    #[serde(default)]
+    #[serde(default = "default_hidden")]
     hidden: Status,
+}
+
+fn default_separator() -> String {
+    " ".to_string()
+}
+
+fn default_conflict() -> Status {
+    Status {
+        text: "(CONFLICT)".to_string(),
+        style: Style {
+            color: Some(super::util::Color::Red),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+fn default_immutable() -> Status {
+    Status {
+        text: "(IMMUTABLE)".to_string(),
+        style: Style {
+            color: Some(super::util::Color::Yellow),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+fn default_empty() -> Status {
+    Status {
+        text: "(EMPTY)".to_string(),
+        style: Style {
+            color: Some(super::util::Color::Yellow),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+fn default_hidden() -> Status {
+    Status {
+        text: "(HIDDEN)".to_string(),
+        style: Style {
+            color: Some(super::util::Color::Yellow),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+fn default_divergent() -> Status {
+    Status {
+        text: "(DIVERGENT)".to_string(),
+        style: Style {
+            color: Some(super::util::Color::Cyan),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
 }
 
 #[cfg_attr(feature = "json-schema", derive(JsonSchema))]
@@ -47,47 +106,12 @@ struct Status {
 impl Default for State {
     fn default() -> Self {
         Self {
-            separator: " ".to_string(),
-            conflict: Status {
-                text: "(CONFLICT)".to_string(),
-                style: Style {
-                    color: Some(super::util::Color::Red),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            divergent: Status {
-                text: "(DIVERGENT)".to_string(),
-                style: Style {
-                    color: Some(super::util::Color::Cyan),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            hidden: Status {
-                text: "(HIDDEN)".to_string(),
-                style: Style {
-                    color: Some(super::util::Color::Yellow),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            empty: Status {
-                text: "(EMPTY)".to_string(),
-                style: Style {
-                    color: Some(super::util::Color::Yellow),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            immutable: Status {
-                text: "(IMMUTABLE)".to_string(),
-                style: Style {
-                    color: Some(super::util::Color::Yellow),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
+            separator: default_separator(),
+            conflict: default_conflict(),
+            divergent: default_divergent(),
+            hidden: default_hidden(),
+            empty: default_empty(),
+            immutable: default_immutable(),
         }
     }
 }
@@ -166,18 +190,13 @@ impl State {
 
         if !self.immutable.disabled && data.commit.warnings.immutable.is_none() {
             if let Some(commit_id) = state.commit_id(command_helper)? {
-                let revs = workspace_helper.parse_revset(
-                    &Ui::null(),
-                    &RevisionArg::from("immutable_heads()".to_string()),
-                )?;
+                let revs = workspace_helper
+                    .parse_revset(&Ui::null(), &RevisionArg::from("immutable()".to_string()))?;
 
                 let mut immutable = revs.evaluate_to_commit_ids()?;
 
-                data.commit.warnings.immutable = Some(
-                    immutable
-                        .find(|id| id.as_ref().is_ok_and(|id| id == commit_id))
-                        .is_some(),
-                );
+                data.commit.warnings.immutable =
+                    Some(immutable.any(|id| id.as_ref().is_ok_and(|id| id == commit_id)));
             }
         }
 

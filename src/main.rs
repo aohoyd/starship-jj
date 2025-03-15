@@ -116,12 +116,12 @@ fn print_prompt(
     Ok(())
 }
 
-fn find_parent_bookmarks<'a>(
+fn find_parent_bookmarks(
     commit_id: &CommitId,
     depth: usize,
     config: &BookmarkConfig,
     bookmarks: &mut BTreeMap<String, usize>,
-    view: &'a View,
+    view: &View,
     store: &Arc<Store>,
 ) -> Result<(), CommandError> {
     let tmp: Vec<_> = view
@@ -175,4 +175,27 @@ fn main() -> ExitCode {
         print!("{elapsed:?} ");
     }
     e
+}
+
+fn print_ansi_truncated(
+    max_length: Option<usize>,
+    io: &mut impl Write,
+    name: &str,
+) -> Result<(), CommandError> {
+    match max_length {
+        Some(max_len) if ansi_width::ansi_width(name) > max_len => {
+            let ansi_max_len = name
+                .char_indices()
+                .map(|(i, _)| i)
+                .take_while(|i| ansi_width::ansi_width(&name[..*i]) < max_len)
+                .last()
+                .unwrap_or_default();
+
+            write!(io, "\"{}…\"", &name[..ansi_max_len])?;
+        }
+        _ => {
+            write!(io, "\"{}\"", name)?;
+        }
+    }
+    Ok(())
 }

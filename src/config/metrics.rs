@@ -12,54 +12,78 @@ use super::util::{Color, Style};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Metrics {
     /// Controls how the changes are rendered, use {added}, {removed} and {changed} to render the number of changes.
+    #[serde(default = "default_template")]
     template: String,
 
     // added_files: Style,
     // removed_files: Style,
     /// Controlls how the number of changed files is rendered.
+    #[serde(default = "default_changed_files")]
     changed_files: Metric,
 
     /// Controlls how the number of added lines is rendered.
+    #[serde(default = "default_added_lines")]
     added_lines: Metric,
     /// Controlls how the number of removed lines is rendered.
+    #[serde(default = "default_removed_lines")]
     removed_lines: Metric,
 
-    #[serde(flatten)]
+    #[serde(flatten, default = "default_style")]
     style: Style,
 }
 
 impl Default for Metrics {
     fn default() -> Self {
         Self {
-            style: Style {
-                color: Some(Color::Magenta),
-                ..Default::default()
-            },
-            template: "[{changed} {added}{removed}]".to_string(),
-            changed_files: Metric {
-                style: Style {
-                    color: Some(Color::Cyan),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            added_lines: Metric {
-                style: Style {
-                    color: Some(Color::Green),
-                    ..Default::default()
-                },
-                prefix: "+".to_string(),
-                ..Default::default()
-            },
-            removed_lines: Metric {
-                style: Style {
-                    color: Some(Color::Red),
-                    ..Default::default()
-                },
-                prefix: "-".to_string(),
-                ..Default::default()
-            },
+            style: default_style(),
+            template: default_template(),
+            changed_files: default_changed_files(),
+            added_lines: default_added_lines(),
+            removed_lines: default_removed_lines(),
         }
+    }
+}
+
+fn default_removed_lines() -> Metric {
+    Metric {
+        style: Style {
+            color: Some(Color::Red),
+            ..Default::default()
+        },
+        prefix: "-".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_added_lines() -> Metric {
+    Metric {
+        style: Style {
+            color: Some(Color::Green),
+            ..Default::default()
+        },
+        prefix: "+".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_changed_files() -> Metric {
+    Metric {
+        style: Style {
+            color: Some(Color::Cyan),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+fn default_template() -> String {
+    "[{changed} {added}{removed}]".to_string()
+}
+
+fn default_style() -> Style {
+    Style {
+        color: Some(Color::Magenta),
+        ..Default::default()
     }
 }
 

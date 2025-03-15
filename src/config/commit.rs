@@ -12,17 +12,22 @@ use super::util::Style;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Commit {
     /// Maximum length the commit text will be truncated to.
+    #[serde(default = "default_max_length")]
     max_length: Option<usize>,
     /// Controls how the commit text is rendered.
     #[serde(flatten)]
     style: Style,
 }
 
+fn default_max_length() -> Option<usize> {
+    Some(24)
+}
+
 impl Default for Commit {
     fn default() -> Self {
         Self {
             style: Default::default(),
-            max_length: Some(24),
+            max_length: default_max_length(),
         }
     }
 }
@@ -41,19 +46,13 @@ impl Commit {
         let first_line = desc
             .split_once(['\r', '\n'])
             .map(|(line, _rest)| line)
-            .unwrap_or(&desc);
+            .unwrap_or(desc);
 
         if !first_line.is_empty() {
             self.style.print(io)?;
 
-            match self.max_length {
-                Some(max_len) if first_line.len() > max_len => {
-                    write!(io, "\"{}…\"{module_separator}", &first_line[..max_len - 1])?;
-                }
-                _ => {
-                    write!(io, "\"{}\"{module_separator}", first_line)?;
-                }
-            }
+            crate::print_ansi_truncated(self.max_length, io, first_line)?;
+            write!(io, "{module_separator}")?;
         }
         Ok(())
     }
