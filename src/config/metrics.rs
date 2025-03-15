@@ -100,16 +100,14 @@ impl Metrics {
         data: &crate::JJData,
         module_separator: &str,
     ) -> Result<(), CommandError> {
+        let Some(diff) = &data.commit.diff else {
+            return Ok(());
+        };
+
         let context = Context {
-            added: self
-                .added_lines
-                .format(data.commit.diff.lines_added, &self.style),
-            removed: self
-                .removed_lines
-                .format(data.commit.diff.lines_removed, &self.style),
-            changed: self
-                .changed_files
-                .format(data.commit.diff.files_changed, &self.style),
+            added: self.added_lines.format(diff.lines_added, &self.style),
+            removed: self.removed_lines.format(diff.lines_removed, &self.style),
+            changed: self.changed_files.format(diff.files_changed, &self.style),
         };
         let mut tiny_template = tinytemplate::TinyTemplate::new();
         tiny_template
@@ -132,6 +130,31 @@ impl Metrics {
         self.style.print(io)?;
 
         write!(io, "{}{module_separator}", s)?;
+
+        Ok(())
+    }
+    pub(crate) fn parse(
+        &self,
+        command_helper: &jj_cli::cli_util::CommandHelper,
+        state: &mut crate::State,
+        data: &mut crate::JJData,
+        _global: &super::GlobalConfig,
+    ) -> Result<(), CommandError> {
+        if data.commit.diff.is_some() {
+            return Ok(());
+        }
+
+        let mut diff = crate::CommitDiff::default();
+
+        let Some(stats) = state.diff_stats(command_helper)? else {
+            return Ok(());
+        };
+
+        diff.files_changed = stats.entries().len();
+        diff.lines_added = stats.count_total_added();
+        diff.lines_removed = stats.count_total_removed();
+
+        data.commit.diff = Some(diff);
 
         Ok(())
     }

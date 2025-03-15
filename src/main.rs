@@ -4,15 +4,16 @@ use args::{ConfigCommands, CustomCommand, StarshipCommands};
 use config::BookmarkConfig;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
-    command_error::{user_error, user_error_with_message, CommandError},
-    diff_util::{get_copy_records, DiffStatOptions, DiffStats},
+    command_error::{CommandError, user_error, user_error_with_message},
     ui::Ui,
 };
-use jj_lib::{backend::CommitId, copies::CopyRecords, repo::Repo, store::Store, view::View};
-use pollster::FutureExt;
+use jj_lib::{backend::CommitId, store::Store, view::View};
+
+pub use state::State;
 
 mod args;
 mod config;
+mod state;
 
 fn starship(
     ui: &mut Ui,
@@ -29,7 +30,7 @@ fn starship(
     let CustomCommand::Starship(args) = command;
     match args.command {
         StarshipCommands::Prompt { starship_config } => {
-            print_prompt(ui, command_helper, &starship_config)?
+            print_prompt(command_helper, &starship_config)?
         }
         StarshipCommands::Config(ConfigCommands::Path) => {
             let config_dir = get_config_path()?;
@@ -58,23 +59,25 @@ fn get_config_path() -> Result<String, CommandError> {
 }
 
 #[derive(Default)]
-struct JJData<'a> {
-    bookmarks: BTreeMap<&'a str, usize>,
+struct JJData {
+    bookmarks: Option<BTreeMap<String, usize>>,
     commit: CommitData,
 }
 
 #[derive(Default)]
 struct CommitData {
-    desc: String,
+    desc: Option<String>,
     warnings: CommitWarnings,
-    diff: CommitDiff,
+    diff: Option<CommitDiff>,
 }
 
 #[derive(Default)]
 struct CommitWarnings {
-    hidden: bool,
-    conflict: bool,
-    divergent: bool,
+    hidden: Option<bool>,
+    conflict: Option<bool>,
+    divergent: Option<bool>,
+    immutable: Option<bool>,
+    empty: Option<bool>,
 }
 
 #[derive(Default)]
@@ -87,7 +90,6 @@ struct CommitDiff {
 }
 
 fn print_prompt(
-    ui: &mut Ui,
     command_helper: &CommandHelper,
     config_path: &Option<PathBuf>,
 ) -> Result<(), CommandError> {
@@ -106,66 +108,10 @@ fn print_prompt(
         }
     };
 
-    let workspace_helper = command_helper.workspace_helper(ui)?;
-    let repo = workspace_helper.repo();
-    let store = repo.store();
+    let mut state = State::default();
     let mut data = JJData::default();
 
-    let Some(commit_id) = workspace_helper.get_wc_commit_id() else {
-        return Ok(());
-    };
-
-    let commit = store.get_commit(commit_id)?;
-
-    let matcher = workspace_helper.parse_file_patterns(ui, &[])?.to_matcher();
-    let change_id = commit.change_id();
-    let change = repo.resolve_change_id(change_id);
-    let mut copy_records = CopyRecords::default();
-    for parent in commit.parent_ids() {
-        let records = get_copy_records(repo.store(), parent, commit_id, &matcher)?;
-        copy_records.add_records(records)?;
-    }
-
-    let tree = commit.tree()?;
-    let parent_tree = commit.parent_tree(repo.as_ref())?;
-
-    let tree_diff = parent_tree.diff_stream_with_copies(&tree, &matcher, &copy_records);
-    let stats = DiffStats::calculate(
-        store,
-        tree_diff,
-        &DiffStatOptions::default(),
-        jj_lib::conflicts::ConflictMarkerStyle::Diff,
-    )
-    .block_on()?;
-
-    data.commit.diff.files_changed = stats.entries().len();
-    data.commit.diff.lines_added = stats.count_total_added();
-    data.commit.diff.lines_removed = stats.count_total_removed();
-
-    data.commit.desc = commit.description().to_string();
-    data.commit.warnings.conflict = commit.has_conflict()?;
-
-    match change {
-        Some(commits) => match commits.len() {
-            0 => data.commit.warnings.hidden = true,
-            1 => {}
-            _ => data.commit.warnings.divergent = true,
-        },
-        None => data.commit.warnings.hidden = true,
-    }
-
-    find_parent_bookmarks(
-        commit_id,
-        0,
-        &config.bookmarks,
-        &mut data.bookmarks,
-        repo.view(),
-        store,
-    )?;
-
-    let mut io = ui.stdout();
-
-    config.print(&mut io, &data)?;
+    config.print(&command_helper, &mut state, &mut data)?;
 
     Ok(())
 }
@@ -174,7 +120,7 @@ fn find_parent_bookmarks<'a>(
     commit_id: &CommitId,
     depth: usize,
     config: &BookmarkConfig,
-    bookmarks: &mut BTreeMap<&'a str, usize>,
+    bookmarks: &mut BTreeMap<String, usize>,
     view: &'a View,
     store: &Arc<Store>,
 ) -> Result<(), CommandError> {
@@ -191,6 +137,7 @@ fn find_parent_bookmarks<'a>(
                     continue 'bookmark;
                 }
             }
+            let bookmark = bookmark.to_string();
             bookmarks
                 .entry(bookmark)
                 .and_modify(|v| {
@@ -218,7 +165,14 @@ fn find_parent_bookmarks<'a>(
 }
 
 fn main() -> ExitCode {
+    let start = std::time::Instant::now();
+    let print_timing = std::env::var("STARSHIP_JJ_TIMING").is_ok();
     let clirunner = CliRunner::init();
     let clirunner = clirunner.add_subcommand(starship);
-    clirunner.run()
+    let e = clirunner.run();
+    let elapsed = start.elapsed();
+    if print_timing {
+        print!("{elapsed:?} ");
+    }
+    e
 }
