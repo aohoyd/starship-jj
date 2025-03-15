@@ -99,14 +99,7 @@ impl Bookmarks {
                 if counter > 0 {
                     write!(io, "{}", self.separator)?;
                 }
-                match self.max_length {
-                    Some(max_len) if name.len() > max_len => {
-                        write!(io, "\"{}…\"", &name[..max_len - 1])?;
-                    }
-                    _ => {
-                        write!(io, "\"{}\"", name)?;
-                    }
-                }
+                crate::print_ansi_truncated(self.max_length, io, name)?;
                 if behind != 0 {
                     match self.behind_symbol {
                         Some(s) => write!(io, "{s}{}", behind)?,

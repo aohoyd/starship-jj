@@ -51,14 +51,8 @@ impl Commit {
         if !first_line.is_empty() {
             self.style.print(io)?;
 
-            match self.max_length {
-                Some(max_len) if first_line.len() > max_len => {
-                    write!(io, "\"{}…\"{module_separator}", &first_line[..max_len - 1])?;
-                }
-                _ => {
-                    write!(io, "\"{}\"{module_separator}", first_line)?;
-                }
-            }
+            crate::print_ansi_truncated(self.max_length, io, first_line)?;
+            write!(io, "{module_separator}")?;
         }
         Ok(())
     }
