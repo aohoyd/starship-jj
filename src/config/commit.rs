@@ -46,7 +46,7 @@ impl Commit {
         let first_line = desc
             .split_once(['\r', '\n'])
             .map(|(line, _rest)| line)
-            .unwrap_or(&desc);
+            .unwrap_or(desc);
 
         if !first_line.is_empty() {
             self.style.print(io)?;

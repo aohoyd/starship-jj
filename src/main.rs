@@ -116,12 +116,12 @@ fn print_prompt(
     Ok(())
 }
 
-fn find_parent_bookmarks<'a>(
+fn find_parent_bookmarks(
     commit_id: &CommitId,
     depth: usize,
     config: &BookmarkConfig,
     bookmarks: &mut BTreeMap<String, usize>,
-    view: &'a View,
+    view: &View,
     store: &Arc<Store>,
 ) -> Result<(), CommandError> {
     let tmp: Vec<_> = view

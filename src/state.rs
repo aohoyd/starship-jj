@@ -167,7 +167,7 @@ impl State {
             let records = get_copy_records(store, parent, commit.id(), &matcher)?;
             copy_records.add_records(records)?;
         }
-        let tree_diff = parent_tree.diff_stream_with_copies(&tree, &matcher, &copy_records);
+        let tree_diff = parent_tree.diff_stream_with_copies(tree, &matcher, &copy_records);
         let stats = DiffStats::calculate(
             repo.store(),
             tree_diff,
@@ -190,6 +190,6 @@ impl State {
             return Ok(None);
         };
 
-        return Ok(Some(tree == parent_tree));
+        Ok(Some(tree == parent_tree))
     }
 }

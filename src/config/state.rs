@@ -195,11 +195,8 @@ impl State {
 
                 let mut immutable = revs.evaluate_to_commit_ids()?;
 
-                data.commit.warnings.immutable = Some(
-                    immutable
-                        .find(|id| id.as_ref().is_ok_and(|id| id == commit_id))
-                        .is_some(),
-                );
+                data.commit.warnings.immutable =
+                    Some(immutable.any(|id| id.as_ref().is_ok_and(|id| id == commit_id)));
             }
         }
 
