@@ -1,10 +1,11 @@
 use std::{collections::BTreeMap, io::Write, path::PathBuf, process::ExitCode, sync::Arc};
 
+use ::config::Environment;
 use args::{ConfigCommands, CustomCommand, StarshipCommands};
 use config::BookmarkConfig;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
-    command_error::{CommandError, user_error, user_error_with_message},
+    command_error::{CommandError, user_error},
     ui::Ui,
 };
 use jj_lib::{backend::CommitId, store::Store, view::View};
@@ -93,20 +94,51 @@ fn print_prompt(
     command_helper: &CommandHelper,
     config_path: &Option<PathBuf>,
 ) -> Result<(), CommandError> {
-    let config = if let Some(config_path) = config_path {
-        toml::from_str(
-            &std::fs::read_to_string(config_path)
-                .map_err(|e| user_error_with_message("Failed to read Config File", e))?,
-        )
-        .map_err(|e| user_error_with_message("Failed to read Config File", e))?
+    dotenvy::dotenv().unwrap();
+    let mut b = ::config::Config::builder();
+
+    if let Some(config_path) = config_path {
+        b = b.add_source(::config::File::new(
+            config_path.to_str().ok_or(CommandError::new(
+                jj_cli::command_error::CommandErrorKind::User,
+                "Invalid Config Path",
+            ))?,
+            ::config::FileFormat::Toml,
+        ));
     } else {
         let config_dir = get_config_path()?;
         if std::fs::exists(&config_dir)? {
-            toml::from_str(&std::fs::read_to_string(config_dir)?).map_err(user_error)?
+            b = b.add_source(::config::File::new(&config_dir, ::config::FileFormat::Toml));
         } else {
-            config::Config::default()
+            b = b.add_source(
+                ::config::Config::try_from(&config::Config::default())
+                    .expect("Config not serializable?"),
+            );
         }
     };
+
+    b = b.add_source(
+        Environment::with_prefix("SJJ")
+            .separator("__")
+            .prefix_separator("__")
+            .try_parsing(true),
+    );
+
+    let c = b.build().map_err(|err| {
+        CommandError::with_message(
+            jj_cli::command_error::CommandErrorKind::User,
+            "Failed to parse Config",
+            err,
+        )
+    })?;
+
+    let config: config::Config = c.try_deserialize().map_err(|err| {
+        CommandError::with_message(
+            jj_cli::command_error::CommandErrorKind::User,
+            "Failed to parse Config",
+            err,
+        )
+    })?;
 
     let mut state = State::default();
     let mut data = JJData::default();
