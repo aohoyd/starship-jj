@@ -8,7 +8,7 @@ starship plugin for jj
   - [x] filter bookmarks by name.
   - [x] filter bookmarks by distance to current commit.
   - [x] limit number of bookmarks that will be printed.
-  - [ ] overwrite bookmark filter per workspace.
+  - [x] overwrite bookmark filter per workspace.
 - [x] show current commit text.
 - [x] show current commit state (Conflict, Divergent, Hidden).
 - [x] show current commit metrics (changed files, insertions, deletions).
