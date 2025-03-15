@@ -66,7 +66,7 @@ footer = """"""
 trim = true
 # postprocessors
 postprocessors = [
-    { pattern = '\$REPO', replace = "https://gitlab.com/Lanastara/starship-jj/-" }, # replace repository URL 
+    { pattern = '\$REPO', replace = "https://gitlab.com/lanastara_foss/starship-jj/-" }, # replace repository URL 
 ]
 output= "CHANGELOG.md"
 

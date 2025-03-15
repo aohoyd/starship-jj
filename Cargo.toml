@@ -7,8 +7,8 @@ edition = "2024"
 authors = ["Lilly Mannhal <lilly.mannhal@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://gitlab.com/Lanastara/starship-jj"
-repository = "https://gitlab.com/Lanastara/starship-jj"
+homepage = "https://gitlab.com/lanastara_foss/starship-jj"
+repository = "https://gitlab.com/lanastara_foss/starship-jj"
 keywords = [
   "command-line-tool",
   "jj",
