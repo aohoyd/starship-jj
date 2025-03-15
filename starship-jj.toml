@@ -1,4 +1,4 @@
-"$schema"="https://gitlab.com/Lanastara/starship-jj/-/raw/v0.1.0/schema.json?ref_type=tags"
+"$schema"="https://gitlab.com/Lanastara/lanastara_foss/-/raw/v0.2.0/schema.json?ref_type=tags"
 # Text that will be printed between each Module.
 module_separator = " "
 
