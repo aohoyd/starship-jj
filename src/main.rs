@@ -94,7 +94,7 @@ fn print_prompt(
     command_helper: &CommandHelper,
     config_path: &Option<PathBuf>,
 ) -> Result<(), CommandError> {
-    dotenvy::dotenv().unwrap();
+    let _ = dotenvy::dotenv();
     let mut b = ::config::Config::builder();
 
     if let Some(config_path) = config_path {
