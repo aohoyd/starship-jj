@@ -1,6 +1,8 @@
-"$schema"="https://gitlab.com/Lanastara/lanastara_foss/-/raw/v0.2.0/schema.json?ref_type=tags"
+"$schema"="https://gitlab.com/Lanastara/lanastara_foss/-/raw/v0.3.0/schema.json?ref_type=tags"
 # Text that will be printed between each Module.
 module_separator = " "
+# Timeout after wich the process is teminated.
+# timeout = 1000
 
 # Controls the behaviour of the bookmark finding algorythm.
 [bookmarks]
@@ -18,8 +20,10 @@ color = "Magenta"
 # bg_color = "Yellow"
 # A suffix that will be printed when the given bookmark is behing the working copy.
 behind_symbol = "⇡"
-# A suffix that will be printed when the given bookmark is behing the working copy.
-# max_bookmarks = 0
+# Maximum amout of bookmarks that will be rendered.
+# max_bookmarks = 1
+# Maximum length the bookmark name will be truncated to.
+# max_length = 10
 
 [[module]]
 # Prints the working copies commit text
@@ -49,6 +53,16 @@ color = "Cyan"
 text = "(HIDDEN)"
 color = "Yellow"
 # bg_color = "Yellow"
+
+[module.immutable]
+disabled = false
+text = "(IMMUTABLE)"
+color = "Yellow"
+
+[module.hidden]
+disabled = false
+text = "(HIDDEN)"
+color = "Yellow"
 
 [[module]]
 # Prints the amount of changes in the working copy

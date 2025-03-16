@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [0.3.1](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.3.0..v0.3.1) - 2025-03-16
+
+### 🐛 Bug Fixes
+
+- **(env)** error when no .env file exists- ([105cf69](https://gitlab.com/lanastara_foss/starship-jj/-/commit/105cf69c8ae638e57b9fa7480681999fdf69022c)) - Lilly Mannhal
 ## [0.3.0](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.2.0..v0.3.0) - 2025-03-15
 
 ### 🚀 Features
@@ -13,7 +18,7 @@ All notable changes to this project will be documented in this file. See [conven
 - actually react to --ignore-working-copy- ([36e486f](https://gitlab.com/lanastara_foss/starship-jj/-/commit/36e486f8c03139807d162af4d9606c950bf645c4)) - Lilly Mannhal
 - only load data when required by a module- ([8635357](https://gitlab.com/lanastara_foss/starship-jj/-/commit/8635357c45249dba77bfb8e81d80eb1607a8dca9)) - Lilly Mannhal
 - global timeout- ([6fc1c76](https://gitlab.com/lanastara_foss/starship-jj/-/commit/6fc1c76c0bbb6b5f5b56cfb7f2c752862b103743)) - Lilly Mannhal
-- parse .env to overwrite config per repo- ([53f0293](https://gitlab.com/lanastara_foss/starship-jj/-/commit/53f0293328727ce87a00750ad3cbeb988bebbeb3)) - Lilly Mannhal
+- parse .env to overwrite config per repo- ([b92279a](https://gitlab.com/lanastara_foss/starship-jj/-/commit/b92279a0bc43574b7356c87fbb9f9bdbac1178b8)) - Lilly Mannhal
 
 ### 🐛 Bug Fixes
 
@@ -26,7 +31,7 @@ All notable changes to this project will be documented in this file. See [conven
 ### ⚙️ Miscellaneous Tasks
 
 - Move to rust 2024- ([8becc34](https://gitlab.com/lanastara_foss/starship-jj/-/commit/8becc3440a7ebca11c8406657a6e6a0e7fd9ae8d)) - Lilly Mannhal
-- move git repo- ([e82a655](https://gitlab.com/lanastara_foss/starship-jj/-/commit/e82a655b1eb7f79d62425de3f3e495f566af65f4)) - Lilly Mannhal
+- move git repo- ([382f11c](https://gitlab.com/lanastara_foss/starship-jj/-/commit/382f11c8798e145bfaad45548dc71fbabfbbef3e)) - Lilly Mannhal
 ## [0.2.0](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.1.0..v0.2.0) - 2025-02-27
 
 ### 🚀 Features
