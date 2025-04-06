@@ -63,9 +63,8 @@
             overlays = [(import inputs.rust-overlay)];
           };
 
-          packages.mim = (rustPackage ./mim-cli []);
-          packages.mim-server = (rustPackage ./mim-server []);
-          packages.default = self'.packages.mim;
+          packages.starship-jj = (rustPackage ./. []);
+          packages.default = self'.packages.starship-jj;
           devShells.default = self'.devShells.stable;
 
           devShells.nightly = (mkDevShell (pkgs.rust-bin.selectLatestNightlyWith
