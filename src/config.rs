@@ -59,16 +59,30 @@ fn default_modules() -> Vec<ModuleConfig> {
 }
 
 #[cfg_attr(feature = "json-schema", derive(JsonSchema))]
-#[derive(Deserialize, Serialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct BookmarkConfig {
     /// Controls how far we are looking back to find bookmarks.
-    pub search_depth: Option<usize>,
+    #[serde(default = "default_search_depth")]
+    pub search_depth: usize,
     /// Exclude certain bookmarks from the search (supports globs)
     #[serde(default)]
     #[cfg(feature = "json-schema")]
     pub exclude: Vec<String>,
     #[cfg(not(feature = "json-schema"))]
     pub exclude: Vec<Glob>,
+}
+
+impl Default for BookmarkConfig {
+    fn default() -> Self {
+        Self {
+            search_depth: default_search_depth(),
+            exclude: Default::default(),
+        }
+    }
+}
+
+fn default_search_depth() -> usize {
+    100
 }
 
 impl Config {

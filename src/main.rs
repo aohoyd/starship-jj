@@ -182,10 +182,8 @@ fn find_parent_bookmarks(
         return Ok(());
     }
 
-    if let Some(max_depth) = config.search_depth {
-        if depth >= max_depth {
-            return Ok(());
-        }
+    if depth >= config.search_depth {
+        return Ok(());
     }
 
     let commit = store.get_commit(commit_id)?;
