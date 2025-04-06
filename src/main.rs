@@ -163,6 +163,7 @@ fn find_parent_bookmarks(
 
     if !tmp.is_empty() {
         'bookmark: for bookmark in tmp {
+            let bookmark = bookmark.as_str();
             for glob in &config.exclude {
                 #[cfg(not(feature = "json-schema"))]
                 if glob.matches(bookmark) {

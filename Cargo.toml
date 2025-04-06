@@ -26,8 +26,8 @@ json-schema = ["dep:schemars", "dep:serde_json"]
 
 [dependencies]
 ansi-width = "0.1"
-jj-lib = "0.27"
-jj-cli = "0.27"
+jj-lib = "0.28.1"
+jj-cli = "0.28.1"
 clap = "4.5.31"
 colored = "3.0"
 dirs = "6.0"
