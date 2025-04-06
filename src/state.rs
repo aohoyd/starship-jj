@@ -66,7 +66,7 @@ impl State {
         let commit_id = self
             .repo(command_helper)?
             .view()
-            .get_wc_commit_id(self.workspace(command_helper)?.workspace_id())
+            .get_wc_commit_id(self.workspace(command_helper)?.workspace_name())
             .cloned();
 
         self.commit_id = Some(commit_id);

@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
-## [0.3.1](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.3.0..v0.3.1) - 2025-03-16
+## [0.3.2](https://gitlab.com/lanastara_foss/starship-jj/-/compare/0.3.1..0.3.2) - 2025-04-06
+
+### 🐛 Bug Fixes
+
+- 'sane' default for search_depth- ([7572317](https://gitlab.com/lanastara_foss/starship-jj/-/commit/7572317ed1f81a359e7b5193f01d5b31584430a0)) - Lilly Mannhal
+
+### ⚙️ Miscellaneous Tasks
+
+- updated pollster- ([f0b74e2](https://gitlab.com/lanastara_foss/starship-jj/-/commit/f0b74e21904d094e920208be8fe38001ffa6f3c8)) - Lilly Mannhal
+- added nix flake- ([a2c9718](https://gitlab.com/lanastara_foss/starship-jj/-/commit/a2c97187c534ba70bc2b4b76a9e01b460e48c397)) - Lilly Mannhal
+## [0.3.1](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.3.0..0.3.1) - 2025-03-16
 
 ### 🐛 Bug Fixes
 

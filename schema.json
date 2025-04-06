@@ -7,7 +7,7 @@
       "description": "Controls the behaviour of the bookmark finding algorythm.",
       "default": {
         "exclude": [],
-        "search_depth": null
+        "search_depth": 100
       },
       "allOf": [
         {
@@ -127,10 +127,8 @@
         },
         "search_depth": {
           "description": "Controls how far we are looking back to find bookmarks.",
-          "type": [
-            "integer",
-            "null"
-          ],
+          "default": 100,
+          "type": "integer",
           "format": "uint",
           "minimum": 0.0
         }

@@ -163,6 +163,7 @@ fn find_parent_bookmarks(
 
     if !tmp.is_empty() {
         'bookmark: for bookmark in tmp {
+            let bookmark = bookmark.as_str();
             for glob in &config.exclude {
                 #[cfg(not(feature = "json-schema"))]
                 if glob.matches(bookmark) {
@@ -182,10 +183,8 @@ fn find_parent_bookmarks(
         return Ok(());
     }
 
-    if let Some(max_depth) = config.search_depth {
-        if depth >= max_depth {
-            return Ok(());
-        }
+    if depth >= config.search_depth {
+        return Ok(());
     }
 
     let commit = store.get_commit(commit_id)?;
