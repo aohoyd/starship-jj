@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpgks.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-root.url = "github:srid/flake-root";
@@ -58,7 +58,7 @@
               nativeBuildInputs = buildDeps ++ devDeps ++ [rustc];
             };
         in {
-          _module.args.pkgs = import inputs.nixpgks {
+          _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
             overlays = [(import inputs.rust-overlay)];
           };
