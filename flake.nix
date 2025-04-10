@@ -11,7 +11,7 @@
       imports = [
         inputs.flake-root.flakeModule
       ];
-      systems = [ "x86_64-linux" ];
+      systems = [ "x86_64-linux" "x86_64-darwin" ];
       perSystem = { config, self', pkgs, lib, system, ... }:
         let          
           runtimeDeps = with pkgs; [ openssl ];
