@@ -6,3 +6,4 @@ public
 .cargo
 .vscode
 .direnv
+.envrc
