@@ -3,6 +3,7 @@ use std::{collections::BTreeMap, io::Write, path::PathBuf, process::ExitCode, sy
 use ::config::Environment;
 use args::{ConfigCommands, CustomCommand, StarshipCommands};
 use config::BookmarkConfig;
+use etcetera::BaseStrategy as _;
 use jj_cli::{
     cli_util::{CliRunner, CommandHelper},
     command_error::{CommandError, user_error},
@@ -49,8 +50,9 @@ fn starship(
 }
 
 fn get_config_path() -> Result<String, CommandError> {
-    let config_dir = dirs::config_dir()
-        .or_else(|| dirs::home_dir().map(|p| p.join(".config")))
+    let config_dir = etcetera::choose_base_strategy()
+        .ok()
+        .map(|s| s.config_dir())
         .ok_or_else(|| user_error("Failed to find config dir"))?;
     let config_dir = config_dir.join("starship-jj/starship-jj.toml");
     let config_dir = config_dir
