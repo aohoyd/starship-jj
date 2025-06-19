@@ -207,7 +207,7 @@ fn main() -> ExitCode {
     if print_timing {
         print!("{elapsed:?} ");
     }
-    e
+    e.into()
 }
 
 fn print_ansi_truncated(
