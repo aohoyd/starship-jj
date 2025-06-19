@@ -125,7 +125,7 @@ impl State {
     ) -> Result<(), CommandError> {
         let mut first = true;
         if let Some(true) = data.commit.warnings.conflict {
-            self.conflict.style.print(io)?;
+            self.conflict.style.print(io, None)?;
             first = false;
             write!(io, "{}", self.conflict.text)?;
         }
@@ -134,7 +134,7 @@ impl State {
                 write!(io, "{}", self.separator)?;
             }
             first = false;
-            self.divergent.style.print(io)?;
+            self.divergent.style.print(io, None)?;
             write!(io, "{}", self.divergent.text)?;
         }
         if let Some(true) = data.commit.warnings.hidden {
@@ -142,7 +142,7 @@ impl State {
                 write!(io, "{}", self.separator)?;
             }
             first = false;
-            self.hidden.style.print(io)?;
+            self.hidden.style.print(io, None)?;
             write!(io, "{}", self.hidden.text)?;
         }
         if let Some(true) = data.commit.warnings.immutable {
@@ -150,7 +150,7 @@ impl State {
                 write!(io, "{}", self.separator)?;
             }
             first = false;
-            self.immutable.style.print(io)?;
+            self.immutable.style.print(io, None)?;
             write!(io, "{}", self.immutable.text)?;
         }
         if let Some(true) = data.commit.warnings.empty {
@@ -158,7 +158,7 @@ impl State {
                 write!(io, "{}", self.separator)?;
             }
             first = false;
-            self.empty.style.print(io)?;
+            self.empty.style.print(io, None)?;
             write!(io, "{}", self.empty.text)?;
         }
         if !first {

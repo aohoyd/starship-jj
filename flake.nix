@@ -78,6 +78,7 @@
           packages = with pkgs; [
             rust-analyzer
             rustDevToolchain
+            cargo-audit
           ];
           inputsFrom = [ self.packages."${system}".default ];
         };

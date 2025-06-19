@@ -2,16 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
+## [0.4.0](https://gitlab.com/lanastara_foss/starship-jj/-/compare/0.3.2..0.4.0) - 2025-06-19
+
+### 🚀 Features
+
+- add intel darwin to list of systems- ([6bb1511](https://gitlab.com/lanastara_foss/starship-jj/-/commit/6bb151167f8277ae29793d67aebe1ee675075d6e)) - Joachim Desroches
+- flake: use fenix, and nix-systems, add overlay.- ([!14](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/14)) - Joachim Desroches
+- update to jj 0.30- ([1711b37](https://gitlab.com/lanastara_foss/starship-jj/-/commit/1711b37b437c7ff3b704450afa448c3bdff47d68)) - Lilly Mannhal
+- symbol module- ([43250e4](https://gitlab.com/lanastara_foss/starship-jj/-/commit/43250e43f8ac4a58f5c19d1db34908fac4afed33)) - Lilly Mannhal
+
+### 🐛 Bug Fixes
+
+- fix flake.nix- ([!12](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/12)) - Lilly Mannhal
+- typo in nixpkgs input of the flake.nix- ([4a345ee](https://gitlab.com/lanastara_foss/starship-jj/-/commit/4a345ee6ea60f2830157e6a2c961f50d4c31d29b)) - Joachim Desroches
+- Update `jj` to `0.29.0` and fix macos config dir- ([!15](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/15)) - Lucio Franco
+-  [**breaking**]default colors fixed- ([a5895a4](https://gitlab.com/lanastara_foss/starship-jj/-/commit/a5895a446ebc47c40adc69a57859d9adb9be3547)) - Lilly Mannhal
+
+### 📚 Documentation
+
+- added contributing file- ([!16](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/16)) - Lilly Mannhal
+- updated sample configuration- ([!17](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/17)) - Lilly Mannhal
+
+### ⚙️ Miscellaneous Tasks
+
+- crossbeam-channel update (RUSTSEC-2025-024).- ([!13](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/13)) - Joachim Desroches
 ## [0.3.2](https://gitlab.com/lanastara_foss/starship-jj/-/compare/0.3.1..0.3.2) - 2025-04-06
 
 ### 🐛 Bug Fixes
 
-- 'sane' default for search_depth- ([7572317](https://gitlab.com/lanastara_foss/starship-jj/-/commit/7572317ed1f81a359e7b5193f01d5b31584430a0)) - Lilly Mannhal
+- 'sane' default for search_depth- ([cc17af0](https://gitlab.com/lanastara_foss/starship-jj/-/commit/cc17af0d4dbd835c56669d665c77e8020ecc06d8)) - Lilly Mannhal
 
 ### ⚙️ Miscellaneous Tasks
 
-- updated pollster- ([f0b74e2](https://gitlab.com/lanastara_foss/starship-jj/-/commit/f0b74e21904d094e920208be8fe38001ffa6f3c8)) - Lilly Mannhal
-- added nix flake- ([a2c9718](https://gitlab.com/lanastara_foss/starship-jj/-/commit/a2c97187c534ba70bc2b4b76a9e01b460e48c397)) - Lilly Mannhal
+- **(release)** update jj deps- ([9834968](https://gitlab.com/lanastara_foss/starship-jj/-/commit/9834968dbc3b3611a85236173665875da0cf9ce8)) - Lilly Mannhal
+- **(release)** prepare 0.3.2- ([!11](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/11)) - Lilly Mannhal
+- updated pollster- ([9a33f7a](https://gitlab.com/lanastara_foss/starship-jj/-/commit/9a33f7a853afa7175833386a7689a0039a40446f)) - Lilly Mannhal
+- added nix flake- ([652d0f7](https://gitlab.com/lanastara_foss/starship-jj/-/commit/652d0f76e0c447f07b21640714c25c1ed8cdd7a5)) - Lilly Mannhal
 ## [0.3.1](https://gitlab.com/lanastara_foss/starship-jj/-/compare/v0.3.0..0.3.1) - 2025-03-16
 
 ### 🐛 Bug Fixes
@@ -21,18 +47,18 @@ All notable changes to this project will be documented in this file. See [conven
 
 ### 🚀 Features
 
-- **(ci)** add cargo deny check- ([7613761](https://gitlab.com/lanastara_foss/starship-jj/-/commit/761376106e8c21176ee5c32275c682f0bb36a0d0)) - Lilly Mannhal
+- **(ci)** add cargo deny check- ([!5](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/5)) - Lilly Mannhal
 - add immutable and empty state- ([ad98020](https://gitlab.com/lanastara_foss/starship-jj/-/commit/ad98020a6c9b6132f7783c87ac1bb4cd8fdbd1a4)) - Lilly Mannhal
 - truncate bookmark names- ([f9a6e5c](https://gitlab.com/lanastara_foss/starship-jj/-/commit/f9a6e5c9e33f27b9597962d9bfba03ac827e1ce8)) - Lilly Mannhal
 - time runtime- ([a5777b6](https://gitlab.com/lanastara_foss/starship-jj/-/commit/a5777b6a6dd30456fd98e5309ddbec70edebfec8)) - Lilly Mannhal
 - actually react to --ignore-working-copy- ([36e486f](https://gitlab.com/lanastara_foss/starship-jj/-/commit/36e486f8c03139807d162af4d9606c950bf645c4)) - Lilly Mannhal
 - only load data when required by a module- ([8635357](https://gitlab.com/lanastara_foss/starship-jj/-/commit/8635357c45249dba77bfb8e81d80eb1607a8dca9)) - Lilly Mannhal
-- global timeout- ([6fc1c76](https://gitlab.com/lanastara_foss/starship-jj/-/commit/6fc1c76c0bbb6b5f5b56cfb7f2c752862b103743)) - Lilly Mannhal
-- parse .env to overwrite config per repo- ([b92279a](https://gitlab.com/lanastara_foss/starship-jj/-/commit/b92279a0bc43574b7356c87fbb9f9bdbac1178b8)) - Lilly Mannhal
+- global timeout- ([!4](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/4)) - Lilly Mannhal
+- parse .env to overwrite config per repo- ([!7](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/7)) - Lilly Mannhal
 
 ### 🐛 Bug Fixes
 
-- 🦀🦀truncating non ascii strings- ([1d296ee](https://gitlab.com/lanastara_foss/starship-jj/-/commit/1d296ee80eeb677616e60a06738fc3a06d882853)) - Lilly Mannhal
+- 🦀🦀truncating non ascii strings- ([!6](https://gitlab.com/lanastara_foss/starship-jj/-/merge_requests/6)) - Lilly Mannhal
 
 ### 📚 Documentation
 

@@ -49,7 +49,7 @@ impl Commit {
             .unwrap_or(desc);
 
         if !first_line.is_empty() {
-            self.style.print(io)?;
+            self.style.print(io, None)?;
 
             crate::print_ansi_truncated(self.max_length, io, first_line)?;
             write!(io, "{module_separator}")?;
