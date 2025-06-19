@@ -41,10 +41,13 @@ ${custom.jj}\
 #...
 
 [custom.jj]
-command='''starship-jj --ignore-working-copy starship prompt'''
-format = "[$symbol](blue bold) $output "
-symbol = "󱗆 "
-when = "jj root --ignore-working-copy"
+command = "prompt"
+format = "[$symbol](blue bold) $output"
+ignore_timeout = true
+shell = ["starship-jj", "--ignore-working-copy", "starship"]
+symbol = "󱗆"
+use_stdin = false
+when = true
 ```
 
 2. Configure what you want to see
