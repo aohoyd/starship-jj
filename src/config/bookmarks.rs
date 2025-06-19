@@ -19,7 +19,7 @@ pub struct Bookmarks {
     #[serde(default = "default_separator")]
     separator: String,
     /// Controls how bookmarks are rendered.
-    #[serde(flatten, default = "default_style")]
+    #[serde(flatten)]
     style: Style,
     /// A suffix that will be printed when the given bookmark is behing the working copy.
     #[serde(default = "default_behind_symbol")]
@@ -68,7 +68,7 @@ impl Bookmarks {
             unreachable!()
         };
 
-        self.style.print(io)?;
+        self.style.print(io, default_style())?;
 
         let mut ordered: BTreeMap<usize, BTreeSet<&String>> = BTreeMap::new();
 

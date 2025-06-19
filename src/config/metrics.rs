@@ -46,32 +46,44 @@ impl Default for Metrics {
 
 fn default_removed_lines() -> Metric {
     Metric {
-        style: Style {
-            color: Some(Color::Red),
-            ..Default::default()
-        },
+        style: default_removed_style(),
         prefix: "-".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_removed_style() -> Style {
+    Style {
+        color: Some(Color::Red),
         ..Default::default()
     }
 }
 
 fn default_added_lines() -> Metric {
     Metric {
-        style: Style {
-            color: Some(Color::Green),
-            ..Default::default()
-        },
+        style: default_added_style(),
         prefix: "+".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_added_style() -> Style {
+    Style {
+        color: Some(Color::Green),
         ..Default::default()
     }
 }
 
 fn default_changed_files() -> Metric {
     Metric {
-        style: Style {
-            color: Some(Color::Cyan),
-            ..Default::default()
-        },
+        style: default_changed_style(),
+        ..Default::default()
+    }
+}
+
+fn default_changed_style() -> Style {
+    Style {
+        color: Some(Color::Cyan),
         ..Default::default()
     }
 }
@@ -98,14 +110,19 @@ struct Metric {
     style: Style,
 }
 impl Metric {
-    fn format(&self, number: usize, global_style: &Style) -> String {
+    fn format(
+        &self,
+        number: usize,
+        global_style: &Style,
+        fallback: impl Into<Option<Style>>,
+    ) -> String {
         format!(
             "{}{}{}{}{}",
-            self.style.format(),
+            self.style.format(fallback),
             self.prefix,
             number,
             self.suffix,
-            global_style.format(),
+            global_style.format(default_style()),
         )
     }
 }
@@ -129,9 +146,19 @@ impl Metrics {
         };
 
         let context = Context {
-            added: self.added_lines.format(diff.lines_added, &self.style),
-            removed: self.removed_lines.format(diff.lines_removed, &self.style),
-            changed: self.changed_files.format(diff.files_changed, &self.style),
+            added: self
+                .added_lines
+                .format(diff.lines_added, &self.style, default_added_style()),
+            removed: self.removed_lines.format(
+                diff.lines_removed,
+                &self.style,
+                default_removed_style(),
+            ),
+            changed: self.changed_files.format(
+                diff.files_changed,
+                &self.style,
+                default_changed_style(),
+            ),
         };
         let mut tiny_template = tinytemplate::TinyTemplate::new();
         tiny_template
@@ -151,7 +178,7 @@ impl Metrics {
             )
         })?;
 
-        self.style.print(io)?;
+        self.style.print(io, default_style())?;
 
         write!(io, "{}{module_separator}", s)?;
 

@@ -21,7 +21,7 @@
         {
           "bg_color": null,
           "color": "Blue",
-          "symbol": "󱗆",
+          "symbol": "󱗆 ",
           "type": "Symbol"
         },
         {
@@ -268,7 +268,7 @@
             },
             "symbol": {
               "description": "Text that will be rendered between each bookmark.",
-              "default": "󱗆",
+              "default": "󱗆 ",
               "type": "string"
             },
             "type": {

@@ -102,7 +102,7 @@ impl Config {
             std::thread::spawn(move || {
                 std::thread::sleep(Duration::from_millis(timeout));
                 if !done2.load(std::sync::atomic::Ordering::Relaxed) {
-                    _ = util::Style::default().print(&mut std::io::stdout());
+                    _ = util::Style::default().print(&mut std::io::stdout(), None);
                     print!(" ");
                     let _ = std::io::stdout().flush();
                     std::process::exit(0);
@@ -139,7 +139,7 @@ impl Config {
                 }
             }
         }
-        util::Style::default().print(&mut io)?;
+        util::Style::default().print(&mut io, None)?;
         Ok(())
     }
 }

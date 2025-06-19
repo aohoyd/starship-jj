@@ -37,15 +37,21 @@ pub struct Style {
 }
 
 impl Style {
-    pub fn print(&self, io: &mut impl Write) -> Result<(), CommandError> {
+    pub fn print(
+        &self,
+        io: &mut impl Write,
+        fallback: impl Into<Option<Style>>,
+    ) -> Result<(), CommandError> {
         write!(io, "\x1B[")?;
 
-        if let Some(color) = self.color {
+        let fallback = fallback.into().unwrap_or_default();
+
+        if let Some(color) = self.color.or_else(|| fallback.color) {
             write!(io, "{}", colored::Color::from(color).to_fg_str())?;
         } else {
             write!(io, "39")?;
         }
-        if let Some(color) = self.bg_color {
+        if let Some(color) = self.bg_color.or_else(|| fallback.bg_color) {
             write!(io, ";{}", colored::Color::from(color).to_bg_str())?;
         } else {
             write!(io, ";49")?;
@@ -55,16 +61,18 @@ impl Style {
         Ok(())
     }
 
-    pub fn format(&self) -> String {
+    pub fn format(&self, fallback: impl Into<Option<Style>>) -> String {
         let mut s = "\x1B[".to_string();
 
-        if let Some(color) = self.color {
+        let fallback = fallback.into().unwrap_or_default();
+
+        if let Some(color) = self.color.or_else(|| fallback.color) {
             s.push_str(colored::Color::from(color).to_fg_str().as_ref());
         } else {
             s.push_str("39");
         }
         s.push(';');
-        if let Some(color) = self.bg_color {
+        if let Some(color) = self.bg_color.or_else(|| fallback.bg_color) {
             s.push_str(colored::Color::from(color).to_bg_str().as_ref());
         } else {
             s.push_str("49");
