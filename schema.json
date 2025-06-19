@@ -19,6 +19,12 @@
       "description": "Modules that will be rendered.",
       "default": [
         {
+          "bg_color": null,
+          "color": "Blue",
+          "symbol": "󱗆",
+          "type": "Symbol"
+        },
+        {
           "behind_symbol": "⇡",
           "bg_color": null,
           "color": "Magenta",
@@ -231,6 +237,48 @@
     "ModuleConfig": {
       "description": "A module that prints some info about the current jj repo",
       "oneOf": [
+        {
+          "description": "Prints an indicator.",
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "bg_color": {
+              "description": "Background Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "color": {
+              "description": "Text Color",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Color"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "symbol": {
+              "description": "Text that will be rendered between each bookmark.",
+              "default": "󱗆",
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "Symbol"
+              ]
+            }
+          }
+        },
         {
           "description": "Prints information about bookmarks in the working copies ancestors.",
           "type": "object",

@@ -42,10 +42,9 @@ ${custom.jj}\
 
 [custom.jj]
 command = "prompt"
-format = "[$symbol](blue bold) $output"
+format = "$output"
 ignore_timeout = true
 shell = ["starship-jj", "--ignore-working-copy", "starship"]
-symbol = "󱗆"
 use_stdin = false
 when = true
 ```

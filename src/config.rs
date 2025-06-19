@@ -12,6 +12,7 @@ use metrics::Metrics;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use state::State;
+use symbol::Symbol;
 use util::Glob;
 
 pub mod util;
@@ -20,6 +21,7 @@ mod bookmarks;
 mod commit;
 mod metrics;
 mod state;
+mod symbol;
 
 #[cfg_attr(feature = "json-schema", derive(JsonSchema))]
 #[derive(Deserialize, Serialize, Debug)]
@@ -51,6 +53,7 @@ fn default_separator() -> String {
 
 fn default_modules() -> Vec<ModuleConfig> {
     vec![
+        ModuleConfig::Symbol(Default::default()),
         ModuleConfig::Bookmarks(Default::default()),
         ModuleConfig::Commit(Default::default()),
         ModuleConfig::State(Default::default()),
@@ -129,6 +132,11 @@ impl Config {
                     let mut io = io.lock();
                     commit_diff.print(&mut io, data, &self.global.module_separator)?
                 }
+                ModuleConfig::Symbol(symbol) => {
+                    symbol.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    symbol.print(&mut io, data, &self.global.module_separator)?
+                }
             }
         }
         util::Style::default().print(&mut io)?;
@@ -141,6 +149,7 @@ impl Config {
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(tag = "type")]
 enum ModuleConfig {
+    Symbol(Symbol),
     Bookmarks(Bookmarks),
     Commit(Commit),
     State(State),
