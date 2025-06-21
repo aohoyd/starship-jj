@@ -24,9 +24,13 @@ impl Symbol {
         _data: &crate::JJData,
         module_separator: &str,
     ) -> Result<(), CommandError> {
-        self.style.print(io, default_style())?;
+        if !self.symbol.is_empty() {
+            write!(io, "{}", module_separator)?;
 
-        write!(io, "{}{module_separator}", self.symbol)?;
+            self.style.print(io, default_style())?;
+
+            write!(io, "{}", self.symbol)?;
+        }
         Ok(())
     }
 

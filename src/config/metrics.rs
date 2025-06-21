@@ -20,6 +20,15 @@ pub struct Metrics {
     /// Controlls how the number of changed files is rendered.
     #[serde(default = "default_changed_files")]
     changed_files: Metric,
+    /// Controlls how the number of modified files is rendered.
+    #[serde(default = "default_modified_files")]
+    modified_files: Metric,
+    /// Controlls how the number of changed files is rendered.
+    #[serde(default = "default_added_files")]
+    added_files: Metric,
+    /// Controlls how the number of changed files is rendered.
+    #[serde(default = "default_removed_files")]
+    removed_files: Metric,
 
     /// Controlls how the number of added lines is rendered.
     #[serde(default = "default_added_lines")]
@@ -38,6 +47,9 @@ impl Default for Metrics {
             style: default_style(),
             template: default_template(),
             changed_files: default_changed_files(),
+            modified_files: default_modified_files(),
+            added_files: default_added_files(),
+            removed_files: default_removed_files(),
             added_lines: default_added_lines(),
             removed_lines: default_removed_lines(),
         }
@@ -81,6 +93,30 @@ fn default_changed_files() -> Metric {
     }
 }
 
+fn default_modified_files() -> Metric {
+    Metric {
+        style: default_changed_style(),
+        prefix: "~".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_added_files() -> Metric {
+    Metric {
+        style: default_added_style(),
+        prefix: "+".to_string(),
+        ..Default::default()
+    }
+}
+
+fn default_removed_files() -> Metric {
+    Metric {
+        style: default_removed_style(),
+        prefix: "-".to_string(),
+        ..Default::default()
+    }
+}
+
 fn default_changed_style() -> Style {
     Style {
         color: Some(Color::Cyan),
@@ -106,6 +142,8 @@ struct Metric {
     prefix: String,
     #[serde(default)]
     suffix: String,
+    #[serde(default)]
+    skip_empty: bool,
     #[serde(flatten)]
     style: Style,
 }
@@ -116,6 +154,9 @@ impl Metric {
         global_style: &Style,
         fallback: impl Into<Option<Style>>,
     ) -> String {
+        if self.skip_empty && number == 0 {
+            return "".to_string();
+        }
         format!(
             "{}{}{}{}{}",
             self.style.format(fallback),
@@ -132,6 +173,10 @@ struct Context {
     added: String,
     removed: String,
     changed: String,
+    files_added: String,
+    files_removed: String,
+    files_modified: String,
+    files_stat: String,
 }
 
 impl Metrics {
@@ -145,6 +190,21 @@ impl Metrics {
             return Ok(());
         };
 
+        let files_added =
+            self.added_files
+                .format(diff.files_added, &self.style, default_added_style());
+        let files_removed =
+            self.removed_files
+                .format(diff.files_removed, &self.style, default_removed_style());
+        let files_modified =
+            self.modified_files
+                .format(diff.files_modified, &self.style, default_changed_style());
+        let files_stat = [&files_added, &files_modified, &files_removed]
+            .iter()
+            .filter(|&s| !s.is_empty())
+            .map(|s| s.as_str())
+            .collect::<Vec<_>>()
+            .join(" ");
         let context = Context {
             added: self
                 .added_lines
@@ -159,6 +219,10 @@ impl Metrics {
                 &self.style,
                 default_changed_style(),
             ),
+            files_added,
+            files_removed,
+            files_modified,
+            files_stat,
         };
         let mut tiny_template = tinytemplate::TinyTemplate::new();
         tiny_template
@@ -178,9 +242,13 @@ impl Metrics {
             )
         })?;
 
-        self.style.print(io, default_style())?;
+        if !s.is_empty() {
+            write!(io, "{}", module_separator)?;
 
-        write!(io, "{}{module_separator}", s)?;
+            self.style.print(io, default_style())?;
+
+            write!(io, "{s}")?;
+        }
 
         Ok(())
     }
@@ -195,15 +263,9 @@ impl Metrics {
             return Ok(());
         }
 
-        let mut diff = crate::CommitDiff::default();
-
-        let Some(stats) = state.diff_stats(command_helper)? else {
+        let Some(diff) = state.commit_diff(command_helper)? else {
             return Ok(());
         };
-
-        diff.files_changed = stats.entries().len();
-        diff.lines_added = stats.count_total_added();
-        diff.lines_removed = stats.count_total_removed();
 
         data.commit.diff = Some(diff);
 

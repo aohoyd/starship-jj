@@ -21,6 +21,9 @@ pub struct Bookmarks {
     /// Controls how bookmarks are rendered.
     #[serde(flatten)]
     style: Style,
+    /// A suffix that will be printed before bookmark
+    #[serde(default = "default_symbol")]
+    symbol: Option<char>,
     /// A suffix that will be printed when the given bookmark is behing the working copy.
     #[serde(default = "default_behind_symbol")]
     behind_symbol: Option<char>,
@@ -37,6 +40,10 @@ fn default_style() -> Style {
     }
 }
 
+fn default_symbol() -> Option<char> {
+    Some('')
+}
+
 fn default_behind_symbol() -> Option<char> {
     Some('⇡')
 }
@@ -49,6 +56,7 @@ impl Default for Bookmarks {
     fn default() -> Self {
         Self {
             style: default_style(),
+            symbol: default_symbol(),
             behind_symbol: default_behind_symbol(),
             max_bookmarks: Default::default(),
             separator: default_separator(),
@@ -85,22 +93,29 @@ impl Bookmarks {
                 });
         }
 
+        if let Some(s) = self.symbol
+            && !bookmarks.is_empty()
+        {
+            write!(io, "{}{}{}", module_separator, s, self.separator)?;
+        }
+
         let mut counter = 0;
         'outer: for (behind, bookmarks) in ordered {
             for name in bookmarks {
-                if let Some(number) = self.max_bookmarks {
-                    if counter >= number {
-                        write!(io, "…{module_separator}")?;
-                        // set counter to 0 so we don't print the module separator twice
-                        counter = 0;
-                        break 'outer;
-                    }
+                if let Some(number) = self.max_bookmarks
+                    && counter >= number
+                {
+                    write!(io, "…")?;
+                    break 'outer;
                 }
                 if counter > 0 {
                     write!(io, "{}", self.separator)?;
                 }
+                if counter == 0 && self.symbol.is_none() {
+                    write!(io, "{}", module_separator)?;
+                }
                 crate::print_ansi_truncated(self.max_length, io, name)?;
-                if behind != 0 {
+                if behind > 1 {
                     match self.behind_symbol {
                         Some(s) => write!(io, "{s}{}", behind)?,
                         None => write!(io, "{}", behind)?,
@@ -108,9 +123,6 @@ impl Bookmarks {
                 }
                 counter += 1;
             }
-        }
-        if counter != 0 {
-            write!(io, "{module_separator}")?;
         }
 
         Ok(())

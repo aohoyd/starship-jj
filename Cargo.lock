@@ -3396,6 +3396,7 @@ dependencies = [
  "config",
  "dotenvy",
  "etcetera",
+ "futures 0.3.31",
  "glob",
  "jj-cli",
  "jj-lib",

@@ -69,6 +69,7 @@ struct JJData {
 
 #[derive(Default)]
 struct CommitData {
+    id: Option<String>,
     desc: Option<String>,
     warnings: CommitWarnings,
     diff: Option<CommitDiff>,
@@ -84,9 +85,10 @@ struct CommitWarnings {
 }
 
 #[derive(Default)]
-struct CommitDiff {
-    // files_added : usize,
-    // files_removed : usize,
+pub struct CommitDiff {
+    files_modified: usize,
+    files_added: usize,
+    files_removed: usize,
     files_changed: usize,
     lines_added: usize,
     lines_removed: usize,
@@ -224,10 +226,10 @@ fn print_ansi_truncated(
                 .last()
                 .unwrap_or_default();
 
-            write!(io, "\"{}…\"", &name[..ansi_max_len])?;
+            write!(io, "{}…", &name[..ansi_max_len])?;
         }
         _ => {
-            write!(io, "\"{}\"", name)?;
+            write!(io, "{}", name)?;
         }
     }
     Ok(())

@@ -34,6 +34,8 @@ pub struct Style {
     pub color: Option<Color>,
     /// Background Color
     pub bg_color: Option<Color>,
+    /// Bold
+    pub bold: Option<bool>,
 }
 
 impl Style {
@@ -46,6 +48,11 @@ impl Style {
 
         let fallback = fallback.into().unwrap_or_default();
 
+        if let Some(true) = self.bold.or_else(|| fallback.bold) {
+            write!(io, "1;")?;
+        } else {
+            write!(io, "0;")?;
+        }
         if let Some(color) = self.color.or_else(|| fallback.color) {
             write!(io, "{}", colored::Color::from(color).to_fg_str())?;
         } else {
@@ -66,6 +73,11 @@ impl Style {
 
         let fallback = fallback.into().unwrap_or_default();
 
+        if let Some(true) = self.bold.or_else(|| fallback.bold) {
+            s.push_str("1;");
+        } else {
+            s.push_str("0;");
+        }
         if let Some(color) = self.color.or_else(|| fallback.color) {
             s.push_str(colored::Color::from(color).to_fg_str().as_ref());
         } else {

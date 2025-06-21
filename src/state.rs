@@ -1,21 +1,24 @@
-use std::sync::Arc;
+use futures::StreamExt as _;
+use std::{ops::AddAssign, sync::Arc};
 
 use jj_cli::{
     cli_util::CommandHelper,
     command_error::CommandError,
-    diff_util::{DiffStatOptions, DiffStats, get_copy_records},
+    diff_util::{DiffStatOptions, DiffStats, diff_status_label_and_char, get_copy_records},
     ui::Ui,
 };
 use jj_lib::{
     backend::CommitId,
     commit::Commit,
-    copies::CopyRecords,
+    copies::{CopiesTreeDiffEntry, CopyRecords},
     fileset::FilesetExpression,
     merged_tree::MergedTree,
     repo::{ReadonlyRepo, Repo},
     workspace::Workspace,
 };
 use pollster::FutureExt;
+
+use crate::CommitDiff;
 
 type Result<T> = std::result::Result<T, CommandError>;
 
@@ -143,7 +146,7 @@ impl State {
         Ok(w)
     }
 
-    pub fn diff_stats(&mut self, command_helper: &CommandHelper) -> Result<Option<DiffStats>> {
+    pub fn commit_diff(&mut self, command_helper: &CommandHelper) -> Result<Option<CommitDiff>> {
         self.load_parent_tree(command_helper)?;
         self.load_tree(command_helper)?;
 
@@ -167,16 +170,35 @@ impl State {
             let records = get_copy_records(store, parent, commit.id(), &matcher)?;
             copy_records.add_records(records)?;
         }
-        let tree_diff = parent_tree.diff_stream_with_copies(tree, &matcher, &copy_records);
-        let stats = DiffStats::calculate(
-            repo.store(),
-            tree_diff,
-            &DiffStatOptions::default(),
-            jj_lib::conflicts::ConflictMarkerStyle::Diff,
-        )
-        .block_on()?;
+        let mut stats = CommitDiff::default();
+        let mut tree_diff = parent_tree.diff_stream_with_copies(tree, &matcher, &copy_records);
 
-        Ok(Some(stats))
+        async {
+            while let Some(CopiesTreeDiffEntry { path, values }) = tree_diff.next().await {
+                let (before, after) = values?;
+                match diff_status_label_and_char(&path, &before, &after) {
+                    (_, 'M') => stats.files_modified.add_assign(1),
+                    (_, 'A') => stats.files_added.add_assign(1),
+                    (_, 'D') => stats.files_removed.add_assign(1),
+                    _ => {}
+                };
+            }
+
+            let jjstats = DiffStats::calculate(
+                repo.store(),
+                tree_diff,
+                &DiffStatOptions::default(),
+                jj_lib::conflicts::ConflictMarkerStyle::Diff,
+            )
+            .await?;
+
+            stats.files_changed = jjstats.entries().len();
+            stats.lines_added = jjstats.count_total_added();
+            stats.lines_removed = jjstats.count_total_removed();
+
+            Ok(Some(stats))
+        }
+        .block_on()
     }
 
     pub fn commit_is_empty(&mut self, command_helper: &CommandHelper) -> Result<Option<bool>> {

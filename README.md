@@ -1,4 +1,5 @@
-# jj-starship
+# Fork of jj-starship
+# Original Repository: [lanastara_foss/starship-jj](https://gitlab.com/lanastara_foss/starship-jj)
 
 starship plugin for jj
 

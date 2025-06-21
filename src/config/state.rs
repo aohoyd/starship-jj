@@ -125,6 +125,7 @@ impl State {
     ) -> Result<(), CommandError> {
         let mut first = true;
         if let Some(true) = data.commit.warnings.conflict {
+            write!(io, "{}", module_separator)?;
             self.conflict.style.print(io, None)?;
             first = false;
             write!(io, "{}", self.conflict.text)?;
@@ -132,6 +133,8 @@ impl State {
         if let Some(true) = data.commit.warnings.divergent {
             if !first {
                 write!(io, "{}", self.separator)?;
+            } else {
+                write!(io, "{}", module_separator)?;
             }
             first = false;
             self.divergent.style.print(io, None)?;
@@ -140,6 +143,8 @@ impl State {
         if let Some(true) = data.commit.warnings.hidden {
             if !first {
                 write!(io, "{}", self.separator)?;
+            } else {
+                write!(io, "{}", module_separator)?;
             }
             first = false;
             self.hidden.style.print(io, None)?;
@@ -148,6 +153,8 @@ impl State {
         if let Some(true) = data.commit.warnings.immutable {
             if !first {
                 write!(io, "{}", self.separator)?;
+            } else {
+                write!(io, "{}", module_separator)?;
             }
             first = false;
             self.immutable.style.print(io, None)?;
@@ -156,13 +163,11 @@ impl State {
         if let Some(true) = data.commit.warnings.empty {
             if !first {
                 write!(io, "{}", self.separator)?;
+            } else {
+                write!(io, "{}", module_separator)?;
             }
-            first = false;
             self.empty.style.print(io, None)?;
             write!(io, "{}", self.empty.text)?;
-        }
-        if !first {
-            write!(io, "{module_separator}")?;
         }
         Ok(())
     }

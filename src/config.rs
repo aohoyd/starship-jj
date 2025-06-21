@@ -5,6 +5,7 @@ use std::{
 };
 
 use bookmarks::Bookmarks;
+use change::Change;
 use commit::Commit;
 use jj_cli::command_error::CommandError;
 use metrics::Metrics;
@@ -18,6 +19,7 @@ use util::Glob;
 pub mod util;
 
 mod bookmarks;
+mod change;
 mod commit;
 mod metrics;
 mod state;
@@ -54,6 +56,7 @@ fn default_separator() -> String {
 fn default_modules() -> Vec<ModuleConfig> {
     vec![
         ModuleConfig::Symbol(Default::default()),
+        ModuleConfig::Change(Default::default()),
         ModuleConfig::Bookmarks(Default::default()),
         ModuleConfig::Commit(Default::default()),
         ModuleConfig::State(Default::default()),
@@ -110,34 +113,41 @@ impl Config {
             });
         }
         let mut io = std::io::stdout();
+        let mut module_separator = "";
         for module in self.modules.iter() {
             match module {
                 ModuleConfig::Bookmarks(bookmarks) => {
                     bookmarks.parse(command_helper, state, data, &self.global)?;
                     let mut io = io.lock();
-                    bookmarks.print(&mut io, data, &self.global.module_separator)?;
+                    bookmarks.print(&mut io, data, module_separator)?;
+                }
+                ModuleConfig::Change(change_desc) => {
+                    change_desc.parse(command_helper, state, data, &self.global)?;
+                    let mut io = io.lock();
+                    change_desc.print(&mut io, data, module_separator)?
                 }
                 ModuleConfig::Commit(commit_desc) => {
                     commit_desc.parse(command_helper, state, data, &self.global)?;
                     let mut io = io.lock();
-                    commit_desc.print(&mut io, data, &self.global.module_separator)?
+                    commit_desc.print(&mut io, data, module_separator)?
                 }
                 ModuleConfig::State(commit_warnings) => {
                     commit_warnings.parse(command_helper, state, data, &self.global)?;
                     let mut io = io.lock();
-                    commit_warnings.print(&mut io, data, &self.global.module_separator)?
+                    commit_warnings.print(&mut io, data, module_separator)?
                 }
                 ModuleConfig::Metrics(commit_diff) => {
                     commit_diff.parse(command_helper, state, data, &self.global)?;
                     let mut io = io.lock();
-                    commit_diff.print(&mut io, data, &self.global.module_separator)?
+                    commit_diff.print(&mut io, data, module_separator)?
                 }
                 ModuleConfig::Symbol(symbol) => {
                     symbol.parse(command_helper, state, data, &self.global)?;
                     let mut io = io.lock();
-                    symbol.print(&mut io, data, &self.global.module_separator)?
+                    symbol.print(&mut io, data, module_separator)?
                 }
             }
+            module_separator = &self.global.module_separator;
         }
         util::Style::default().print(&mut io, None)?;
         Ok(())
@@ -151,6 +161,7 @@ impl Config {
 enum ModuleConfig {
     Symbol(Symbol),
     Bookmarks(Bookmarks),
+    Change(Change),
     Commit(Commit),
     State(State),
     Metrics(Metrics),
